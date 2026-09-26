@@ -126,3 +126,48 @@ Open **Scene editor** from the main menu (side panel; the scene stays visible).
 - Upload a `.glb`: it is validated first (glTF 2.0 binary, at least one mesh, no external resources, at most 150k triangles, at most 20 MB), then stored and can be added to the scene or downloaded again.
 
 API (`apps/api/app/api.py`): `GET/POST /scenes`, `POST /scenes/import`, `GET/PUT/DELETE /scenes/{id}`, `GET /scenes/{id}/export`, `POST /models/validate`, `POST /models?name=`, `GET /models`, `GET /models/{name}/model.glb`. Uploaded files are stored in `MODELS_DIR` (default `uploads/`). Apply the migration with `make migrate`.
+
+## Authentication
+
+- `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`.
+- Passwords are hashed with `scrypt`; the session is an httpOnly cookie `piksa_session` (HMAC-SHA256, 7 days).
+- All `/scenes` and `/models` routes require a session.
+- Set `SECRET_KEY` (e.g. `openssl rand -hex 32`) in `.env`; use `COOKIE_SECURE=1` behind HTTPS.
+- External login research: `docs/oauth-research.md`.
+
+## Optimization and quality profiles
+
+| Profile | LOD switch (m) | Dynamic lights | Shadows          | Resolution         |
+| ------- | -------------- | -------------- | ---------------- | ------------------ |
+| low     | 3 / 6          | 1              | off              | 1/1.5              |
+| medium  | 5 / 10         | 2              | objects >= 0.6 m | 1                  |
+| high    | 8 / 16         | 3              | objects >= 0.2 m | device pixel ratio |
+
+- `*_LOD0/1/2` nodes from Blender are switched by camera distance (`src/scene/quality.ts`).
+- Static room meshes are frozen after loading; Babylon frustum culling is on by default.
+- WebGL is the default renderer. WebGPU is only probed with `?renderer=webgpu` (`docs/webgpu-research.md`).
+- Distributed processing research: `docs/distributed-processing.md`.
+
+## End-to-end tests
+
+```bash
+cd apps/web && npm install && npx playwright install chromium
+cd ../.. && make e2e
+```
+
+Playwright starts its own API (port 8001, SQLite `apps/api/e2e.db`) and Vite (port 5174),
+so it never hits running Docker containers.
+Covered: registration, session after reload, logout, wrong password, duplicate login,
+protected API, desktop lab and settings, disabled VR button without a headset,
+scene import/export round trip. The simulation procedure is covered by unit tests in `src/sim/`.
+
+## Manual test on HTC VIVE Focus 3
+
+- [ ] Open the HTTPS URL in VIVE Browser, sign in.
+- [ ] Enter VR, both controllers and rays visible.
+- [ ] Teleport only on the floor; switch to free movement and turn in settings.
+- [ ] Grab, carry and release items; drop zones snap.
+- [ ] Button, lever and information panel respond.
+- [ ] Complete the procedure; wrong order shows a hint.
+- [ ] Switch low/medium/high, frame rate stays stable.
+- [ ] Exit VR returns to the desktop page.
