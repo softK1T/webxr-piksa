@@ -4,10 +4,13 @@ export const STEPS = [
   { id: "open_panel", title: "Open the information panel" },
   {
     id: "goggles_to_prep",
-    title: "Put the safety goggles in the preparation zone",
+    title: "Put the safety goggles on the goggles check pad",
   },
   { id: "find_flask", title: "Find the lab flask" },
-  { id: "flask_to_bench", title: "Carry the flask to the workbench zone" },
+  {
+    id: "flask_to_bench",
+    title: "Carry the flask to the pad at the measurement device",
+  },
   { id: "tube_to_rack", title: "Put the test tube into the rack" },
   { id: "select_container", title: "Select the blue container" },
   { id: "toggle_lever", title: "Switch the lever on" },

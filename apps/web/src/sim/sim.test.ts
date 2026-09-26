@@ -8,7 +8,8 @@ import {
   type ScenarioEvent,
   type ScenarioState,
 } from "./scenario";
-import { findZone } from "./zones";
+import { DROP_ZONES, findZone } from "./zones";
+import { LAB_LAYOUT } from "../scene/labLayout";
 
 const run = (events: ScenarioEvent[], start: ScenarioState = initialScenario) =>
   events.reduce(reduceScenario, start);
@@ -65,8 +66,8 @@ test("switching the lever off removes the step", () => {
 });
 
 test("zones accept only their items", () => {
-  expect(findZone([-1.9, 1.2, 0.6], "safety_goggles")?.id).toBe("prep_zone");
-  expect(findZone([-1.9, 1.2, 0.6], "lab_flask")).toBeNull();
+  expect(findZone([-2.5, 1.2, 0.45], "safety_goggles")?.id).toBe("prep_zone");
+  expect(findZone([-2.5, 1.2, 0.45], "lab_flask")).toBeNull();
   expect(findZone([0, 1, 0], "safety_goggles")).toBeNull();
 });
 
@@ -113,4 +114,19 @@ test("release outside a zone returns the item home", () => {
   expect(grab.release("right")).toBeNull();
   expect(anchor.position.x).toBeCloseTo(-1.4);
   expect(grab.holding).toBe(false);
+});
+
+test("drop zones do not overlap and flask does not start inside its target", () => {
+  for (const a of DROP_ZONES)
+    for (const b of DROP_ZONES) {
+      if (a === b) continue;
+      const apart = [0, 2].some(
+        (i) => Math.abs(a.center[i] - b.center[i]) > a.half[i] + b.half[i],
+      );
+      expect(apart, `${a.id} vs ${b.id}`).toBe(true);
+    }
+  const flask = LAB_LAYOUT.find((p) => p.id === "flask")!;
+  expect(findZone(flask.position, "lab_flask")).toBeNull();
+  const tube = LAB_LAYOUT.find((p) => p.id === "tube")!;
+  expect(findZone(tube.position, "test_tube")).toBeNull();
 });

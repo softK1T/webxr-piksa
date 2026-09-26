@@ -33,7 +33,7 @@ export const MODEL_NAMES = [
 const T = TABLE_HEIGHT;
 
 export const LAB_LAYOUT: readonly ModelPlacement[] = [
-  { id: "flask", model: "lab_flask", position: [-4.72, 1.72, -1.4] },
+  { id: "flask", model: "lab_flask", position: [-2.45, T, 0.95] },
   { id: "rack", model: "test_tube_rack", position: [-1.9, T, 1.1] },
   { id: "tube", model: "test_tube", position: [-1.4, T, 0.8] },
   { id: "device", model: "measurement_device", position: [2.5, T, 0.9] },
@@ -86,7 +86,7 @@ export const LAB_LAYOUT: readonly ModelPlacement[] = [
   {
     id: "warning",
     model: "warning_sign",
-    position: [4.3, 0, 3.4],
+    position: [1.75, 0, 3.55],
     rotationY: Math.PI,
   },
   {
@@ -105,4 +105,99 @@ export function isInsideRoom([x, y, z]: Vec3): boolean {
     y >= 0 &&
     y < ROOM.height
   );
+}
+
+export interface LabZone {
+  id: string;
+  title: string;
+  color: readonly [number, number, number];
+  center: readonly [number, number];
+  size: readonly [number, number];
+  labelPosition: Vec3;
+  labelRotationY: number;
+  items: readonly string[];
+}
+
+export const LAB_ZONES: readonly LabZone[] = [
+  {
+    id: "safety",
+    title: "1. Safety station",
+    color: [0.2, 0.5, 0.95],
+    center: [-4.45, -0.8],
+    size: [1.0, 2.0],
+    labelPosition: [-4.9, 2.3, -0.8],
+    labelRotationY: -Math.PI / 2,
+    items: ["goggles", "gloves", "first_aid"],
+  },
+  {
+    id: "chemistry",
+    title: "2. Sample bench",
+    color: [0.25, 0.8, 0.4],
+    center: [-1.9, 1.0],
+    size: [2.2, 1.4],
+    labelPosition: [-1.9, 2.0, 1.75],
+    labelRotationY: 0,
+    items: ["flask", "rack", "tube"],
+  },
+  {
+    id: "analysis",
+    title: "3. Analysis bench",
+    color: [0.95, 0.8, 0.2],
+    center: [1.9, 1.0],
+    size: [2.2, 1.4],
+    labelPosition: [1.9, 2.0, 1.75],
+    labelRotationY: 0,
+    items: ["device", "container_red", "container_blue", "container_green"],
+  },
+  {
+    id: "controls",
+    title: "4. Control console",
+    color: [0.95, 0.5, 0.15],
+    center: [4.35, 1.0],
+    size: [1.0, 1.4],
+    labelPosition: [4.9, 2.2, 1.0],
+    labelRotationY: Math.PI / 2,
+    items: ["button", "lever"],
+  },
+  {
+    id: "emergency",
+    title: "Emergency",
+    color: [0.9, 0.15, 0.15],
+    center: [-4.4, -3.4],
+    size: [1.0, 1.0],
+    labelPosition: [-4.4, 1.5, -3.9],
+    labelRotationY: Math.PI,
+    items: ["extinguisher"],
+  },
+  {
+    id: "info",
+    title: "Instructions",
+    color: [0.6, 0.4, 0.95],
+    center: [0, 3.5],
+    size: [4.2, 0.9],
+    labelPosition: [0, 2.65, 3.9],
+    labelRotationY: Math.PI,
+    items: ["info_panel", "warning"],
+  },
+];
+
+export const ITEM_LABELS: Record<string, string> = {
+  flask: "Flask",
+  rack: "Tube rack",
+  tube: "Test tube",
+  device: "Measurement device",
+  container_red: "Red",
+  container_blue: "Blue",
+  container_green: "Green",
+  goggles: "Goggles",
+  gloves: "Gloves",
+  first_aid: "First aid kit",
+  extinguisher: "Fire extinguisher",
+  button: "Start button",
+  lever: "Lever",
+  warning: "Caution",
+};
+
+export function zoneOf(placementId: string): LabZone | undefined {
+  return LAB_ZONES.find((z) => z.items.includes(placementId));
 }

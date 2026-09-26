@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { BASE_CAMERA_SPEED, createLabScene } from "../scene/createLabScene";
 import { LAB_LAYOUT } from "../scene/labLayout";
 import { LodManager, applyQuality, freezeStatic } from "../scene/quality";
+import { mountInfoPanel } from "../scene/labDressing";
 import { loadLabModels, type LoadProgress } from "../scene/loadLabModels";
 import { GrabSystem } from "../sim/grab";
 import { createHintMarker } from "../sim/hintMarker";
@@ -123,6 +124,7 @@ export default function LabCanvas() {
       if (!disposed) setProgress(p);
     }).then(() => {
       if (disposed) return;
+      mountInfoPanel(scene);
       freezeStatic(scene);
       applyQuality(scene, settingsRef.current.quality);
     });

@@ -10,6 +10,7 @@ import {
   Vector3,
 } from "@babylonjs/core";
 import { buildRoom } from "./buildRoom";
+import { createDropZones, dressLab } from "./labDressing";
 
 export const BASE_CAMERA_SPEED = 0.12;
 
@@ -68,5 +69,7 @@ export function createLabScene(
   createLighting(scene);
   createCamera(scene, canvas);
   buildRoom(scene);
+  dressLab(scene);
+  createDropZones(scene);
   return scene;
 }
