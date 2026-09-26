@@ -1,3 +1,4 @@
+import { notifyUnauthorized } from "../auth/authApi";
 import type { SceneConfigData } from "./sceneConfig";
 
 export interface SceneSummary {
@@ -20,6 +21,7 @@ export interface UploadedModel extends ModelInfo {
 export type StoredScene = SceneConfigData & { id: number };
 
 export async function readJson<T>(response: Response): Promise<T> {
+  if (response.status === 401) notifyUnauthorized();
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as {
       detail?: unknown;

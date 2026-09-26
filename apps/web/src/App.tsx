@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
+import AuthForm from "./auth/AuthForm";
+import { authApi, UNAUTHORIZED_EVENT, type User } from "./auth/authApi";
 import LabCanvas from "./components/LabCanvas";
+
+type AuthState = { status: "loading" } | { status: "ready"; user: User | null };
 
 export default function App() {
   const [status, setStatus] = useState("Checking connection…");
+  const [auth, setAuth] = useState<AuthState>({ status: "loading" });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -21,14 +26,49 @@ export default function App() {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    authApi
+      .me()
+      .catch(() => null)
+      .then((user) => active && setAuth({ status: "ready", user }));
+    const onUnauthorized = () => setAuth({ status: "ready", user: null });
+    window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+    return () => {
+      active = false;
+      window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+    };
+  }, []);
+
+  async function handleLogout() {
+    await authApi.logout().catch(() => undefined);
+    setAuth({ status: "ready", user: null });
+  }
+
+  const user = auth.status === "ready" ? auth.user : null;
+
   return (
     <main>
       <header className="topbar">
         <h1>Piksa VR</h1>
         <span>Virtual laboratory</span>
         <p role="status">{status}</p>
+        {user && (
+          <div className="user-box">
+            <span>{user.login}</span>
+            <button type="button" onClick={handleLogout}>
+              Log out
+            </button>
+          </div>
+        )}
       </header>
-      <LabCanvas />
+      {auth.status === "loading" && <p className="auth">Loading…</p>}
+      {auth.status === "ready" &&
+        (user ? (
+          <LabCanvas />
+        ) : (
+          <AuthForm onAuth={(u) => setAuth({ status: "ready", user: u })} />
+        ))}
     </main>
   );
 }
