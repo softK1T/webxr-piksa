@@ -2,6 +2,7 @@ import { Engine, PointerEventTypes, UniversalCamera } from "@babylonjs/core";
 import { useEffect, useRef, useState } from "react";
 import { BASE_CAMERA_SPEED, createLabScene } from "../scene/createLabScene";
 import { LAB_LAYOUT } from "../scene/labLayout";
+import { LodManager, applyQuality, freezeStatic } from "../scene/quality";
 import { loadLabModels, type LoadProgress } from "../scene/loadLabModels";
 import { GrabSystem } from "../sim/grab";
 import { createHintMarker } from "../sim/hintMarker";
@@ -80,6 +81,8 @@ export default function LabCanvas() {
       return;
     }
     const scene = createLabScene(engine, canvas);
+    applyQuality(scene, settingsRef.current.quality);
+    const lod = new LodManager(scene);
     runtimeRef.current = {
       engine,
       camera:
@@ -118,6 +121,10 @@ export default function LabCanvas() {
     });
     void loadLabModels(scene, (p) => {
       if (!disposed) setProgress(p);
+    }).then(() => {
+      if (disposed) return;
+      freezeStatic(scene);
+      applyQuality(scene, settingsRef.current.quality);
     });
     void checkXRSupport().then(async (result) => {
       if (disposed) return;
@@ -139,7 +146,10 @@ export default function LabCanvas() {
         setSupport("unsupported");
       }
     });
-    engine.runRenderLoop(() => scene.render());
+    engine.runRenderLoop(() => {
+      lod.update();
+      scene.render();
+    });
     const onResize = () => engine.resize();
     window.addEventListener("resize", onResize);
     return () => {
@@ -159,6 +169,8 @@ export default function LabCanvas() {
     saveSettings(settings);
     const runtime = runtimeRef.current;
     if (runtime) {
+      const activeScene = runtime.engine.scenes[0];
+      if (activeScene) applyQuality(activeScene, settings.quality);
       runtime.engine.setHardwareScalingLevel(
         hardwareScaling(settings.quality, window.devicePixelRatio),
       );
