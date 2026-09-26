@@ -36,3 +36,5 @@ certs/
 *.log
 .idea/
 .vscode/
+apps/api/e2e.db
+apps/api/e2e-uploads/

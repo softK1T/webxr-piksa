@@ -1,6 +1,6 @@
 PYTHON ?= $(abspath apps/api/.venv/bin/python)
 
-.PHONY: up down format lint type-check test build migrate blender-models validate-models
+.PHONY: e2e up down format lint type-check test build migrate blender-models validate-models
 up:
 	docker compose up --build -d
 
@@ -36,3 +36,6 @@ blender-models:
 
 validate-models:
 	python3 tools/blender/validate_models.py
+
+e2e:
+	cd apps/web && npx playwright test
