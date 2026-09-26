@@ -32,6 +32,7 @@ export interface ScenarioState {
   status: ScenarioStatus;
   message: string;
   leverOn: boolean;
+  mistakes: number;
 }
 
 export const initialScenario: ScenarioState = {
@@ -39,6 +40,7 @@ export const initialScenario: ScenarioState = {
   status: "idle",
   message: "Open the information panel to begin.",
   leverOn: false,
+  mistakes: 0,
 };
 
 const title = (id: StepId) => STEPS.find((s) => s.id === id)?.title ?? id;
@@ -81,6 +83,7 @@ function validate(state: ScenarioState): ScenarioState {
     return {
       ...state,
       status: "failed",
+      mistakes: state.mistakes + 1,
       message: `Sequence incomplete. Missing step: ${missing[0].title}.`,
     };
   }
@@ -114,6 +117,7 @@ export function reduceScenario(
     return {
       ...s,
       status: "running",
+      mistakes: s.mistakes + 1,
       message: `Wrong container (${color}). Select the blue container.`,
     };
   }
@@ -124,6 +128,7 @@ export function reduceScenario(
     return {
       ...s,
       status: "running",
+      mistakes: s.mistakes + 1,
       message: `Not yet. First: ${title(expected)}.`,
     };
   }

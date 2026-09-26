@@ -30,6 +30,10 @@ export class GrabSystem {
     private readonly onEvent: (event: ScenarioEvent) => void,
   ) {}
 
+  get heldModel(): string | null {
+    return this.held?.model ?? null;
+  }
+
   get holding(): boolean {
     return this.held !== null;
   }

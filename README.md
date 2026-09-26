@@ -108,3 +108,10 @@ VR controls: teleport by pushing the stick forward and releasing, snap turn with
 Procedure: open the information panel, put the goggles in the preparation zone (yellow), find the flask (shelf), carry it to the workbench zone (blue), put the test tube into the rack, select the blue container, switch the lever on, press the start button.
 
 Desktop: click to interact; click a grabbable item (goggles, flask, test tube) to pick it up, walk to the zone and click again to drop it. VR: trigger interacts, hold squeeze to grab and release squeeze to drop.
+
+## User interface
+
+- Main menu: start on desktop or in VR, instructions, settings. VR support status is shown in the menu.
+- Settings (`src/ui/settings.ts`, stored in `localStorage`): movement speed, VR locomotion (teleport/free), VR turning (snap/smooth), graphics quality (low/medium/high, mapped to render resolution).
+- In-scene hints: a yellow marker (`src/sim/hintMarker.ts`) floats above the next target (item or drop zone); the information panel lists steps and hints and is readable in VR.
+- HUD progress bar, current step and message; result screen with time and mistake count after a successful run.

@@ -11,6 +11,8 @@ import {
 } from "@babylonjs/core";
 import { buildRoom } from "./buildRoom";
 
+export const BASE_CAMERA_SPEED = 0.12;
+
 export const CAMERA_START = new Vector3(0, 1.7, -3);
 
 export function createLighting(scene: Scene) {
@@ -41,7 +43,7 @@ export function createCamera(scene: Scene, canvas?: HTMLCanvasElement) {
   );
   camera.setTarget(new Vector3(0, 1.3, 1));
   camera.minZ = 0.05;
-  camera.speed = 0.12;
+  camera.speed = BASE_CAMERA_SPEED;
   camera.angularSensibility = 3000;
   camera.inertia = 0.6;
   camera.keysUp.push(87);

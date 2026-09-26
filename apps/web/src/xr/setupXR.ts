@@ -1,5 +1,6 @@
 import {
   AbstractMesh,
+  Quaternion,
   Scene,
   TransformNode,
   WebXRFeatureName,
@@ -30,6 +31,8 @@ export const DEFAULT_XR_SETTINGS: XRSettings = {
   snapTurn: true,
 };
 
+export const SNAP_ANGLE = Math.PI / 4;
+
 export interface ControllerAction {
   action: "trigger" | "squeeze";
   pressed: boolean;
@@ -48,6 +51,7 @@ export interface XRController {
   enter(): Promise<void>;
   exit(): Promise<void>;
   setMode(mode: LocomotionMode): void;
+  applySettings(settings: XRSettings): void;
   readonly isInXR: boolean;
   dispose(): void;
 }
@@ -77,8 +81,9 @@ export async function setupXR(
   scene: Scene,
   floor: AbstractMesh,
   events: XREvents,
-  settings: XRSettings = DEFAULT_XR_SETTINGS,
+  initial: XRSettings = DEFAULT_XR_SETTINGS,
 ): Promise<XRController> {
+  let settings = initial;
   const xr = await scene.createDefaultXRExperienceAsync({
     floorMeshes: [floor],
     disableDefaultUI: true,
@@ -87,7 +92,23 @@ export async function setupXR(
   });
   const features = xr.baseExperience.featuresManager;
 
+  const enableMovement = (move: boolean) =>
+    features.enableFeature(
+      WebXRFeatureName.MOVEMENT,
+      "latest",
+      {
+        xrInput: xr.input,
+        movementEnabled: move,
+        rotationEnabled: !settings.snapTurn,
+        movementSpeed: settings.moveSpeed,
+        rotationSpeed: settings.rotationSpeed,
+      } as IWebXRControllerMovementOptions,
+      true,
+      false,
+    );
+
   const setMode = (mode: LocomotionMode) => {
+    settings = { ...settings, mode };
     if (mode === "teleport") {
       features.disableFeature(WebXRFeatureName.MOVEMENT);
       const teleport = features.enableFeature(
@@ -98,19 +119,10 @@ export async function setupXR(
         false,
       ) as WebXRMotionControllerTeleportation;
       teleport.rotationEnabled = settings.snapTurn;
+      if (!settings.snapTurn) enableMovement(false);
     } else {
       features.disableFeature(WebXRFeatureName.TELEPORTATION);
-      features.enableFeature(
-        WebXRFeatureName.MOVEMENT,
-        "latest",
-        {
-          xrInput: xr.input,
-          movementSpeed: settings.moveSpeed,
-          rotationSpeed: settings.rotationSpeed,
-        } as IWebXRControllerMovementOptions,
-        true,
-        false,
-      );
+      enableMovement(true);
     }
   };
   setMode(settings.mode);
@@ -139,6 +151,20 @@ export async function setupXR(
           });
       bind("xr-standard-trigger", "trigger");
       bind("xr-standard-squeeze", "squeeze");
+      if (motion.handedness === "right") {
+        let latched = false;
+        motion
+          .getComponent("xr-standard-thumbstick")
+          ?.onAxisValueChangedObservable.add(({ x }) => {
+            if (settings.mode !== "free" || !settings.snapTurn) return;
+            if (Math.abs(x) < 0.3) latched = false;
+            if (latched || Math.abs(x) < 0.7) return;
+            latched = true;
+            xr.baseExperience.camera.rotationQuaternion.multiplyInPlace(
+              Quaternion.FromEulerAngles(0, Math.sign(x) * SNAP_ANGLE, 0),
+            );
+          });
+      }
     });
   });
 
@@ -159,6 +185,10 @@ export async function setupXR(
         await xr.baseExperience.exitXRAsync();
     },
     setMode,
+    applySettings: (next: XRSettings) => {
+      settings = next;
+      setMode(next.mode);
+    },
     get isInXR() {
       return xr.baseExperience.state === WebXRState.IN_XR;
     },

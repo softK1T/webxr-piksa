@@ -94,3 +94,80 @@ main {
 .scenario-failed {
   color: #ff8a7a;
 }
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 12, 16, 0.6);
+}
+.card {
+  width: min(520px, 92vw);
+  max-height: 88vh;
+  overflow: auto;
+  padding: 1.5rem;
+  border-radius: 10px;
+  background: #1d2229;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.card h2 {
+  margin: 0 0 0.4rem;
+}
+.card h3 {
+  margin: 0.6rem 0 0;
+  font-size: 1rem;
+}
+.card p,
+.card ol {
+  margin: 0;
+  line-height: 1.45;
+}
+.card button {
+  padding: 0.6rem;
+  border: 0;
+  border-radius: 6px;
+  background: #f0a830;
+  color: #111;
+  font-weight: 600;
+  cursor: pointer;
+}
+.card button:disabled {
+  background: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
+.muted {
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.settings label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.settings select,
+.settings input {
+  padding: 0.35rem;
+}
+.progress {
+  width: 260px;
+  height: 6px;
+  margin: 0.4rem 0;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: #7dffa0;
+  transition: width 0.3s;
+}
