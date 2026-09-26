@@ -85,3 +85,12 @@ main {
   padding: 0.3rem 0.6rem;
   border-radius: 6px;
 }
+.scenario {
+  font-weight: 600;
+}
+.scenario-success {
+  color: #7dffa0;
+}
+.scenario-failed {
+  color: #ff8a7a;
+}

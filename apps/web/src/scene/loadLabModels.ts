@@ -17,6 +17,7 @@ export async function loadModel(
   const anchor = new TransformNode(`place_${placement.id}`, scene);
   anchor.position.set(...placement.position);
   anchor.rotation.y = placement.rotationY ?? 0;
+  anchor.scaling.setAll(placement.scale ?? 1);
   const result = await SceneLoader.ImportMeshAsync(
     "",
     MODELS_URL,

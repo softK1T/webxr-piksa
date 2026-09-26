@@ -96,3 +96,15 @@ adb reverse tcp:8000 tcp:8000
 Then open http://localhost:5173 in VIVE Browser and press Enter VR.
 
 VR controls: teleport by pushing the stick forward and releasing, snap turn with the stick left/right; trigger/squeeze selects the object under the ray.
+
+## Interaction and simulation
+
+- `src/sim/scenario.ts`: pure state machine for the procedure, kept separate from rendering. It validates the order of steps and returns hints on mistakes.
+- `src/sim/zones.ts`: drop zones (`prep_zone`, `workbench_zone`, `rack_zone`) and the items each accepts.
+- `src/sim/grab.ts`: grab/carry/release; released items snap into a matching zone or return to their previous place.
+- `src/sim/interaction.ts`: button press, lever toggle, information panel and container selection.
+- `src/sim/infoPanel.ts`: in-world information panel showing the procedure, progress and hints (readable in VR).
+
+Procedure: open the information panel, put the goggles in the preparation zone (yellow), find the flask (shelf), carry it to the workbench zone (blue), put the test tube into the rack, select the blue container, switch the lever on, press the start button.
+
+Desktop: click to interact; click a grabbable item (goggles, flask, test tube) to pick it up, walk to the zone and click again to drop it. VR: trigger interacts, hold squeeze to grab and release squeeze to drop.

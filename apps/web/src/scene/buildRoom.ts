@@ -83,6 +83,7 @@ export function buildRoom(scene: Scene): Mesh[] {
   const metalM = mat(scene, "M_Metal", new Color3(0.25, 0.28, 0.32));
   const doorM = mat(scene, "M_Door", new Color3(0.42, 0.3, 0.2));
   const lampM = mat(scene, "M_Lamp", new Color3(1, 0.97, 0.9), true);
+  const benchM = mat(scene, "M_BenchZone", new Color3(0.3, 0.75, 0.95));
   const zoneM = mat(scene, "M_PrepZone", new Color3(0.95, 0.75, 0.15));
 
   const floor = MeshBuilder.CreateGround(
@@ -103,6 +104,14 @@ export function buildRoom(scene: Scene): Mesh[] {
     box(scene, "door", [1.0, 2.1, 0.06], [-3.5, 1.05, -D / 2 + 0.03], doorM),
     table(scene, "table_a", -2, 1, woodM, metalM),
     table(scene, "table_b", 2, 1, woodM, metalM),
+    box(
+      scene,
+      "workbench_zone",
+      [0.5, 0.005, 0.4],
+      [-2.5, TABLE_HEIGHT + 0.003, 1.1],
+      benchM,
+      false,
+    ),
     box(
       scene,
       "prep_zone",

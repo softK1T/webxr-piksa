@@ -1,11 +1,11 @@
 import {
   AbstractMesh,
-  type IWebXRControllerMovementOptions,
   Scene,
+  TransformNode,
   WebXRFeatureName,
   WebXRMotionControllerTeleportation,
   WebXRState,
-  type WebXRInputSource,
+  type IWebXRControllerMovementOptions,
 } from "@babylonjs/core";
 import {
   applyHighlight,
@@ -30,9 +30,18 @@ export const DEFAULT_XR_SETTINGS: XRSettings = {
   snapTurn: true,
 };
 
+export interface ControllerAction {
+  action: "trigger" | "squeeze";
+  pressed: boolean;
+  hand: string;
+  mesh: AbstractMesh | null;
+  grip: TransformNode;
+}
+
 export interface XREvents {
   onStateChange(inXR: boolean): void;
   onSelect(event: SelectionEvent): void;
+  onAction?(action: ControllerAction): void;
 }
 
 export interface XRController {
@@ -52,7 +61,7 @@ export function emitSelection(
   mesh: AbstractMesh | null,
   action: SelectAction,
   hand: string,
-  events: XREvents,
+  events: Pick<XREvents, "onSelect">,
 ) {
   const placement = placementOf(mesh);
   applyHighlight(scene.meshes, placement?.placementId ?? null);
@@ -106,18 +115,27 @@ export async function setupXR(
   };
   setMode(settings.mode);
 
-  const select = (source: WebXRInputSource, action: SelectAction) => {
-    const mesh = xr.pointerSelection.getMeshUnderPointer(source.uniqueId);
-    emitSelection(scene, mesh, action, source.inputSource.handedness, events);
-  };
-
   xr.input.onControllerAddedObservable.add((source) => {
     source.onMotionControllerInitObservable.add((motion) => {
-      const bind = (componentId: string, action: SelectAction) =>
+      const bind = (componentId: string, action: "trigger" | "squeeze") =>
         motion
           .getComponent(componentId)
           ?.onButtonStateChangedObservable.add((component) => {
-            if (component.changes.pressed?.current) select(source, action);
+            const change = component.changes.pressed;
+            if (!change) return;
+            const mesh = xr.pointerSelection.getMeshUnderPointer(
+              source.uniqueId,
+            );
+            const hand = source.inputSource.handedness;
+            if (change.current)
+              emitSelection(scene, mesh, action, hand, events);
+            events.onAction?.({
+              action,
+              pressed: change.current,
+              hand,
+              mesh,
+              grip: source.grip ?? source.pointer,
+            });
           });
       bind("xr-standard-trigger", "trigger");
       bind("xr-standard-squeeze", "squeeze");

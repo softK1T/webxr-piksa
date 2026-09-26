@@ -9,6 +9,7 @@ export interface ModelPlacement {
   model: string;
   position: Vec3;
   rotationY?: number;
+  scale?: number;
 }
 
 export const MODEL_NAMES = [
@@ -32,7 +33,7 @@ export const MODEL_NAMES = [
 const T = TABLE_HEIGHT;
 
 export const LAB_LAYOUT: readonly ModelPlacement[] = [
-  { id: "flask", model: "lab_flask", position: [-2.5, T, 1.0] },
+  { id: "flask", model: "lab_flask", position: [-4.72, 1.72, -1.4] },
   { id: "rack", model: "test_tube_rack", position: [-1.9, T, 1.1] },
   { id: "tube", model: "test_tube", position: [-1.4, T, 0.8] },
   { id: "device", model: "measurement_device", position: [2.5, T, 0.9] },
@@ -93,6 +94,7 @@ export const LAB_LAYOUT: readonly ModelPlacement[] = [
     model: "information_panel",
     position: [0, 0, 3.6],
     rotationY: Math.PI,
+    scale: 2,
   },
 ];
 
