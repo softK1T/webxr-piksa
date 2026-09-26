@@ -171,3 +171,70 @@ main {
   background: #7dffa0;
   transition: width 0.3s;
 }
+.editor-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(380px, 100vw);
+  overflow: auto;
+  padding: 1rem;
+  background: rgba(29, 34, 41, 0.96);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+.editor-panel header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.editor-panel h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.editor-panel section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid #333a44;
+}
+.editor-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.editor-panel fieldset {
+  display: flex;
+  gap: 0.3rem;
+  border: 1px solid #333a44;
+  border-radius: 6px;
+}
+.editor-panel fieldset input {
+  width: 33%;
+  min-width: 0;
+}
+.editor-panel .row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.editor-panel .model span {
+  flex: 1;
+}
+.editor-panel button,
+.editor-panel .file {
+  padding: 0.35rem 0.7rem;
+  border: 0;
+  border-radius: 6px;
+  background: #f0a830;
+  color: #111;
+  font-weight: 600;
+  cursor: pointer;
+}
+.editor-panel .file input {
+  font-size: 0.75rem;
+}

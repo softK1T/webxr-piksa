@@ -115,3 +115,14 @@ Desktop: click to interact; click a grabbable item (goggles, flask, test tube) t
 - Settings (`src/ui/settings.ts`, stored in `localStorage`): movement speed, VR locomotion (teleport/free), VR turning (snap/smooth), graphics quality (low/medium/high, mapped to render resolution).
 - In-scene hints: a yellow marker (`src/sim/hintMarker.ts`) floats above the next target (item or drop zone); the information panel lists steps and hints and is readable in VR.
 - HUD progress bar, current step and message; result screen with time and mistake count after a successful run.
+
+## Content management
+
+Open **Scene editor** from the main menu (side panel; the scene stays visible).
+
+- Select an object and edit position, rotation (degrees) and scale; changes apply live.
+- Save/load scene configurations to the database, export the current scene to JSON and import JSON (validated on the client and the server).
+- Add built-in models, export a built-in model as GLB.
+- Upload a `.glb`: it is validated first (glTF 2.0 binary, at least one mesh, no external resources, at most 150k triangles, at most 20 MB), then stored and can be added to the scene or downloaded again.
+
+API (`apps/api/app/api.py`): `GET/POST /scenes`, `POST /scenes/import`, `GET/PUT/DELETE /scenes/{id}`, `GET /scenes/{id}/export`, `POST /models/validate`, `POST /models?name=`, `GET /models`, `GET /models/{name}/model.glb`. Uploaded files are stored in `MODELS_DIR` (default `uploads/`). Apply the migration with `make migrate`.
