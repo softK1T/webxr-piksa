@@ -7,7 +7,7 @@ from tools.blender.common import LODS, cube, cylinder, finalize, math, palette, 
 NAME = "fire_extinguisher"
 COLOR = (0.8, 0.1, 0.08)
 LOD = True
-LOD_SEGMENTS = (("LOD0", 24), ("LOD1", 17), ("LOD2", 8))
+LOD_SEGMENTS = (("LOD0", 24), ("LOD1", 17), ("LOD2", 10))
 
 
 def build(p, s, m):

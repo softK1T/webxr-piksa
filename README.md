@@ -171,3 +171,10 @@ scene import/export round trip. The simulation procedure is covered by unit test
 - [ ] Complete the procedure; wrong order shows a hint.
 - [ ] Switch low/medium/high, frame rate stays stable.
 - [ ] Exit VR returns to the desktop page.
+
+## Model polygon budget
+
+`make validate-models` fails only on hard limits (max LOD0 triangles, LOD ratios, size, materials).
+`below soft target` warnings are informational: simple props (containers, sign, panel, controls)
+are intentionally lower than the plan's lower bound, because the plan says not to add geometry
+for invisible detail. The whole scene is about 6k triangles against a 150k budget.
