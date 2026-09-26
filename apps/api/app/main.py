@@ -1,12 +1,15 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api import router
+from app.auth import current_user
+from app.auth import router as auth_router
 from app.database import make_engine
 
 app = FastAPI(title="Piksa VR API")
-app.include_router(router)
+app.include_router(auth_router)
+app.include_router(router, dependencies=[Depends(current_user)])
 
 
 @app.get("/health")

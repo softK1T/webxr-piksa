@@ -145,3 +145,13 @@ def test_model_upload_rejects_bad_input(client: TestClient) -> None:
     bad = client.post("/models?name=ok", content=b"garbage garbage garbage")
     assert bad.status_code == 422
     assert "GLB" in bad.json()["detail"]
+
+
+@pytest.fixture(autouse=True)
+def _auth_override() -> Iterator[None]:
+    from app.auth import current_user
+    from app.main import app as main_app
+
+    main_app.dependency_overrides[current_user] = lambda: None
+    yield
+    main_app.dependency_overrides.pop(current_user, None)
