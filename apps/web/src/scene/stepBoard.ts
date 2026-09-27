@@ -5,7 +5,12 @@ import {
   StandardMaterial,
   type Scene,
 } from "@babylonjs/core";
-import { STEPS, nextStep, type ScenarioState } from "../sim/scenario";
+import {
+  STEPS,
+  nextStep,
+  reportLines,
+  type ScenarioState,
+} from "../sim/scenario";
 import { STEP_GUIDE, wrapText } from "../sim/stepGuide";
 
 const W = 1536;
@@ -48,7 +53,31 @@ export function createStepBoard(scene: Scene) {
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = "#f1eee2";
     ctx.font = "bold 34px sans-serif";
-    ctx.fillText("Well water analysis - what to do", 32, 48);
+    ctx.fillText(
+      state.status === "success"
+        ? "Test report"
+        : "Well water analysis - what to do",
+      32,
+      48,
+    );
+    ctx.font = "22px sans-serif";
+    ctx.fillStyle = state.status === "failed" ? "#ff8a7a" : "#ffd166";
+    ctx.fillText(
+      state.status === "failed" || state.status === "success"
+        ? state.message
+        : "Request: water turned cloudy after rain. Is it safe to drink?",
+      W / 2,
+      48,
+    );
+    if (state.status === "success") {
+      ctx.fillStyle = "#f1eee2";
+      ctx.font = "28px sans-serif";
+      reportLines(state)
+        .slice(0, 10)
+        .forEach((line, i) => ctx.fillText(line, 32, 110 + i * 44));
+      texture.update();
+      return;
+    }
     const current = nextStep(state);
     STEPS.forEach((step, i) => {
       const x = 32 + (i < 4 ? 0 : W / 2);

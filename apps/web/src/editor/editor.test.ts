@@ -10,9 +10,7 @@ test("default layout converts to a valid config", () => {
   expect(config.objects).toHaveLength(LAB_LAYOUT.length);
   const parsed = parseSceneConfig(JSON.parse(JSON.stringify(config)));
   expect(parsed.errors).toEqual([]);
-  expect(
-    parsed.config?.objects.find((o) => o.id === "info_panel")?.scale,
-  ).toEqual([2, 2, 2]);
+  expect(parsed.config?.objects.find((o) => o.id === "parcel")).toBeTruthy();
 });
 
 test("invalid configs are rejected with messages", () => {

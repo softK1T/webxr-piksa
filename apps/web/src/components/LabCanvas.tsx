@@ -9,14 +9,12 @@ import {
   createLightZones,
   freezeStatic,
 } from "../scene/quality";
-import { mountInfoPanel } from "../scene/labDressing";
 import { loadLabModels, type LoadProgress } from "../scene/loadLabModels";
 import { GrabSystem } from "../sim/grab";
 import { createPourWatcher, flaskMouthOf } from "../sim/pour";
 import { clickEvent, openParcelLid } from "../sim/devices";
 import { createHintMarker } from "../sim/hintMarker";
 import { HINT_DELAY_MS, hintTarget } from "../sim/hints";
-import { createInfoPanel } from "../sim/infoPanel";
 import { createStepBoard } from "../scene/stepBoard";
 import { createEquipmentVisuals } from "../scene/equipmentVisuals";
 import { createWristPanel } from "../sim/wristPanel";
@@ -135,11 +133,9 @@ export default function LabCanvas() {
           ? scene.activeCamera
           : null,
     };
-    const panel = createInfoPanel(scene);
     const board = createStepBoard(scene);
     const visuals = createEquipmentVisuals(scene);
     let state = newScenario();
-    panel.draw(state);
     board.draw(state);
     const wrist = createWristPanel(scene);
     const range = createShootingRange(scene, {
@@ -193,7 +189,6 @@ export default function LabCanvas() {
     });
     const dispatch = (event: ScenarioEvent) => {
       state = reduceScenario(state, event);
-      panel.draw(state);
       board.draw(state);
       visuals.update(state);
       wrist.draw(state);
@@ -314,7 +309,6 @@ export default function LabCanvas() {
       if (!disposed) setProgress(p);
     }).then(() => {
       if (disposed) return;
-      mountInfoPanel(scene);
       visuals.update(state);
       freezeStatic(scene);
       applyQuality(scene, settingsRef.current.quality);
