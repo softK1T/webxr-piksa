@@ -141,6 +141,8 @@ API (`apps/api/app/api.py`): `GET/POST /scenes`, `POST /scenes/import`, `GET/PUT
 
 ## Optimization and quality profiles
 
+- Distributed processing: the API runs several worker processes (`API_WORKERS`, default 2); models load in parallel (up to 6 at once).
+
 - Latency: the API compresses responses (GZip) and marks model files cacheable (`Cache-Control: private, max-age=86400`); sessions are stateless signed cookies, so several API instances can run behind a load balancer. See `docs/distributed-processing.md`.
 
 | Profile | LOD switch (m) | Dynamic lights | Shadows          | Resolution         |

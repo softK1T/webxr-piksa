@@ -49,6 +49,25 @@ export async function loadModel(
   return anchor;
 }
 
+export const MODEL_CONCURRENCY = 6;
+
+/** Run fn over items with at most `limit` in flight; fn returning false stops new work. */
+export async function mapLimit<T>(
+  items: readonly T[],
+  limit: number,
+  fn: (item: T) => Promise<boolean | void>,
+): Promise<void> {
+  let next = 0;
+  let stop = false;
+  const worker = async () => {
+    while (!stop && next < items.length)
+      if ((await fn(items[next++])) === false) stop = true;
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, worker),
+  );
+}
+
 export async function loadLabModels(
   scene: Scene,
   onProgress: (progress: LoadProgress) => void,
@@ -59,16 +78,21 @@ export async function loadLabModels(
     total: layout.length,
     failed: [],
   };
-  for (const placement of layout) {
-    if (scene.isDisposed) break;
-    try {
-      await loadModel(scene, placement);
-    } catch (error) {
-      console.error(`Model ${placement.model} failed`, error);
-      progress.failed = [...progress.failed, placement.model];
-    }
-    progress.loaded += 1;
-    onProgress({ ...progress });
-  }
+  // parallel downloads (bounded) instead of one-by-one: lower time-to-first-frame
+  await mapLimit(
+    layout,
+    MODEL_CONCURRENCY,
+    async (placement): Promise<boolean | void> => {
+      if (scene.isDisposed) return false;
+      try {
+        await loadModel(scene, placement);
+      } catch (error) {
+        console.error(`Model ${placement.model} failed`, error);
+        progress.failed = [...progress.failed, placement.model];
+      }
+      progress.loaded += 1;
+      onProgress({ ...progress });
+    },
+  );
   return progress;
 }
