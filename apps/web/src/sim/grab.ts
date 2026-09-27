@@ -12,6 +12,9 @@ import { findZone } from "./zones";
 export const GRABBABLE: ReadonlySet<string> = new Set([
   "safety_goggles",
   "lab_flask",
+  "sample_bottle",
+  "erlenmeyer_flask",
+  "cuvette",
   "test_tube",
   "fire_extinguisher",
 ]);

@@ -19,7 +19,13 @@ import {
 import { createBevelBox } from "../scene/bevelBox";
 import { placementOf } from "../xr/selection";
 
-export const BLASTER_TARGETS = ["lab_flask", "test_tube"] as const;
+export const BLASTER_TARGETS = [
+  "lab_flask",
+  "test_tube",
+  "erlenmeyer_flask",
+  "cuvette",
+  "sample_bottle",
+] as const;
 export const RESPAWN_MS = 3000;
 /** Muzzle in model space: origin is the centre of the grip (where the palm is). */
 export const MUZZLE_LOCAL = new Vector3(0, 0.084, 0.178);

@@ -17,25 +17,25 @@ export const HINT_DELAY_MS = 40_000;
 export function hintTarget(
   step: StepId | null,
   held: string | null,
-  sampleId = "flask",
+  sampleId = "sample_bottle",
 ): HintTarget {
   switch (step) {
     case "open_panel":
-      return { kind: "point", position: [0, 2.05, 3.6] };
+      return item("parcel");
     case "goggles_to_prep":
       return held === "safety_goggles" ? null : item("goggles");
     case "find_flask":
       return item(sampleId);
     case "flask_to_bench":
-      return held === "lab_flask" ? zone("workbench_zone") : item(sampleId);
+      return held === "sample_bottle" ? item("erlenmeyer") : item(sampleId);
     case "tube_to_rack":
-      return held === "test_tube" ? zone("rack_zone") : item("tube");
+      return held === "cuvette" ? zone("turbidimeter_socket") : item("cuvette");
     case "select_container":
-      return item("container_blue");
+      return item("buffer_ph7");
     case "toggle_lever":
-      return item("lever");
+      return item("pump");
     case "press_start":
-      return item("button");
+      return item("ph_meter");
     default:
       return null;
   }

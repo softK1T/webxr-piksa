@@ -78,11 +78,11 @@ function setup() {
   const engine = new NullEngine();
   engines.push(engine);
   const scene = new Scene(engine);
-  const anchor = new TransformNode("place_tube", scene);
+  const anchor = new TransformNode("place_cuvette", scene);
   anchor.position.set(-1.4, TABLE_HEIGHT, 0.8);
-  const mesh = new Mesh("tube_mesh", scene);
+  const mesh = new Mesh("cuvette_mesh", scene);
   mesh.parent = anchor;
-  mesh.metadata = { placementId: "tube", model: "test_tube" };
+  mesh.metadata = { placementId: "cuvette", model: "cuvette" };
   const hand = new TransformNode("hand", scene);
   hand.position.set(-1.4, 1.0, 0.8);
   const events: ScenarioEvent[] = [];
@@ -99,10 +99,10 @@ function setup() {
 test("grab and release into a zone snaps the item", () => {
   const { anchor, mesh, hand, events, grab } = setup();
   expect(grab.grab(mesh, hand, "left")).toBe(true);
-  hand.position.set(3.2, 1.0, 0.85);
-  expect(grab.release("left")).toBe("rack_zone");
-  expect(anchor.position.x).toBeCloseTo(3.2);
-  expect(anchor.position.z).toBeCloseTo(0.85);
+  hand.position.set(2.5, 1.0, 0.84);
+  expect(grab.release("left")).toBe("turbidimeter_socket");
+  expect(anchor.position.x).toBeCloseTo(2.5);
+  expect(anchor.position.z).toBeCloseTo(0.84);
   expect(events.map((e) => e.type)).toEqual(["grabbed", "placed"]);
 });
 
@@ -125,10 +125,10 @@ test("drop zones do not overlap and flask does not start inside its target", () 
       );
       expect(apart, `${a.id} vs ${b.id}`).toBe(true);
     }
-  const flask = LAB_LAYOUT.find((p) => p.id === "flask")!;
-  expect(findZone(flask.position, "lab_flask")).toBeNull();
-  const tube = LAB_LAYOUT.find((p) => p.id === "tube")!;
-  expect(findZone(tube.position, "test_tube")).toBeNull();
+  const flask = LAB_LAYOUT.find((p) => p.id === "erlenmeyer")!;
+  expect(findZone(flask.position, "erlenmeyer_flask")).toBeNull();
+  const cuvette = LAB_LAYOUT.find((p) => p.id === "cuvette")!;
+  expect(findZone(cuvette.position, "cuvette")).toBeNull();
 });
 
 test("wrist panel text follows the next step", async () => {

@@ -21,20 +21,12 @@ export const DROP_ZONES: readonly DropZone[] = [
     accepts: ["safety_goggles"],
   },
   {
-    id: "workbench_zone",
-    label: "Analyzer inlet",
-    center: [3.73, T, 0.84],
-    half: [0.18, 0.5, 0.14],
-    snap: [3.73, T + 0.01, 0.84],
-    accepts: ["lab_flask"],
-  },
-  {
-    id: "rack_zone",
-    label: "Tube holder",
-    center: [3.2, T, 0.85],
-    half: [0.2, 0.5, 0.12],
-    snap: [3.2, T + 0.02, 0.85],
-    accepts: ["test_tube"],
+    id: "turbidimeter_socket",
+    label: "Turbidimeter well",
+    center: [2.5, T, 0.84],
+    half: [0.15, 0.5, 0.12],
+    snap: [2.5, T + 0.01, 0.84],
+    accepts: ["cuvette"],
   },
 ];
 
