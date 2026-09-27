@@ -18,9 +18,11 @@ const H = 600;
 export const GUIDE_CHARS = 74;
 export const GUIDE_LINES = 3;
 
-/** Chalkboard on the back wall (buildRoom.ts: 2.5 x 1 m at -0.6, 2.05, 3.92). */
+/** Chalkboard on the back wall (buildRoom.ts: 2.5 x 1 m at -0.6, 2.05, 3.92).
+ *  The board plane sits 0.3 m lower than the physical chalkboard mesh so it
+ *  reads comfortably at standing eye level (~1.75 m centre). */
 export const BOARD = {
-  center: [-0.6, 2.05, 3.89] as const,
+  center: [-0.6, 1.75, 3.89] as const,
   width: 2.4,
   height: 0.94,
 };

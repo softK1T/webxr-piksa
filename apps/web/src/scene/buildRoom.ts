@@ -100,15 +100,17 @@ export function buildRoom(scene: Scene): Mesh[] {
   glass.alpha = 0.12;
   const out: Mesh[] = [];
   const add = (...m: Mesh[]) => out.push(...m);
+  // "floor" is a flat CreateGround — the only mesh passed to setupXR as floorMesh.
+  // The parquet is visual-only and must not be used for teleportation raycasts.
   const floorBase = MeshBuilder.CreateGround(
-    "floor_base",
+    "floor",
     { width: W, height: D },
     scene,
   );
   floorBase.material = mat(scene, "M_ParquetGap", new Color3(0.14, 0.08, 0.04));
   floorBase.checkCollisions = true;
   floorBase.position.y = -0.021;
-  add(floorBase, createParquet("floor", scene, { width: W, depth: D }));
+  add(floorBase, createParquet("floor_parquet", scene, { width: W, depth: D }));
   add(
     box(scene, "ceiling", [W, 0.1, D], [0, H + 0.05, 0], ceil, false),
     box(scene, "wall_north", [W, H, 0.1], [0, H / 2, D / 2 + 0.05], wall),
@@ -307,7 +309,7 @@ export function buildRoom(scene: Scene): Mesh[] {
       false,
     ),
   );
-  // safe, fire board, radiator, pipes (coat rack removed: the parcel stands there)
+  // safe, fire board, radiator, pipes
   add(
     box(scene, "safe", [0.8, 1, 0.65], [-4.5, 0.5, -2.65], metal),
     box(scene, "fire_board", [0.05, 1.1, 1], [-4.92, 1.45, -3.25], red, false),
