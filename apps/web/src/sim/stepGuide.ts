@@ -3,7 +3,7 @@ import type { StepId } from "./scenario";
 /** What exactly to do in each step (shown on the wall board). Never name colours. */
 export const STEP_GUIDE: Record<StepId, string> = {
   open_panel:
-    "Go to the Delivery zone by the door. Click the parcel (VR: point and pull the trigger) to open the lid. The owner's note appears on the information panel.",
+    "Go to the Delivery zone by the door. Click the parcel (VR: point and pull the trigger) to open the lid. The owner's request is at the top of this board.",
   goggles_to_prep:
     "Safety station, top shelf: take the goggles, bring them to your face and let go (desktop: release while they hang in front of you). Unknown liquid - protect your eyes.",
   find_flask:
@@ -17,7 +17,7 @@ export const STEP_GUIDE: Record<StepId, string> = {
   toggle_lever:
     "Switch on the vacuum pump next to the filtration set (click the pump). Water is drawn through the filter paper into the receiving flask; the residue stays on the filter.",
   press_start:
-    "Press MEASURE on the pH meter (click the meter). The screen shows pH and conductivity in uS/cm. The information panel then shows the test report and the verdict.",
+    "Press MEASURE on the pH meter (click the meter). The screen shows pH and conductivity in uS/cm. This board then shows the test report and the verdict.",
 };
 
 /** Greedy word wrap by character count (no canvas needed, testable). */

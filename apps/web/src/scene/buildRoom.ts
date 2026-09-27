@@ -204,14 +204,6 @@ export function buildRoom(scene: Scene): Mesh[] {
   // chalkboard, clock
   add(
     box(scene, "chalkboard", [2.5, 1, 0.05], [-0.6, 2.05, 3.92], dark, false),
-    box(
-      scene,
-      "chalk_formula",
-      [1.7, 0.025, 0.035],
-      [-0.6, 2.08, 3.88],
-      white,
-      false,
-    ),
   );
   const clock = MeshBuilder.CreateCylinder(
     "wall_clock",
