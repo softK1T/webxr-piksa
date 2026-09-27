@@ -3,17 +3,12 @@ import AuthForm from "./auth/AuthForm";
 import { authApi, UNAUTHORIZED_EVENT, type User } from "./auth/authApi";
 import LabCanvas from "./components/LabCanvas";
 import { EditorPanel } from "./editor/EditorPanel";
-import { EditorPanel } from "./editor/EditorPanel";
 
 type AuthState = { status: "loading" } | { status: "ready"; user: User | null };
 
 export default function App() {
   const [status, setStatus] = useState("Checking connection…");
   const [auth, setAuth] = useState<AuthState>({ status: "loading" });
-  const [showEditor, setShowEditor] = useState(false);
-  const getSceneRef = useRef<
-    (() => import("@babylonjs/core").Scene | null) | null
-  >(null);
   const [showEditor, setShowEditor] = useState(false);
   const getSceneRef = useRef<
     (() => import("@babylonjs/core").Scene | null) | null
@@ -66,9 +61,6 @@ export default function App() {
         {user && (
           <div className="user-box">
             <span>{user.login}</span>
-            <button type="button" onClick={() => setShowEditor((v) => !v)}>
-              Scene editor
-            </button>
             <button type="button" onClick={() => setShowEditor((v) => !v)}>
               Scene editor
             </button>
