@@ -4,6 +4,8 @@ Interactive WebXR visualization and simulation system: a low-poly virtual labora
 
 ## Run with Docker
 
+Host ports are configurable: `API_PORT=8001 WEB_PORT=5174 make up` (inside the network the web app still talks to `api:8000`).
+
 ```bash
 cp .env.example .env
 make blender-models   # generate 3D models (see below)
