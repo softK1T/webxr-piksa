@@ -13,14 +13,6 @@ const T = TABLE_HEIGHT;
 
 export const DROP_ZONES: readonly DropZone[] = [
   {
-    id: "prep_zone",
-    label: "Goggles check",
-    center: [-2.55, T, 0.85],
-    half: [0.2, 0.5, 0.15],
-    snap: [-2.55, T + 0.01, 0.85],
-    accepts: ["safety_goggles"],
-  },
-  {
     id: "turbidimeter_socket",
     label: "Turbidimeter well",
     center: [2.5, T, 0.84],

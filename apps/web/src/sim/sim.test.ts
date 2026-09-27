@@ -16,7 +16,7 @@ const run = (events: ScenarioEvent[], start: ScenarioState = initialScenario) =>
 
 const HAPPY: ScenarioEvent[] = [
   { type: "panel_opened" },
-  { type: "placed", model: "safety_goggles", zone: "prep_zone" },
+  { type: "placed", model: "safety_goggles", zone: "face" },
   { type: "grabbed", model: "sample_bottle" },
   { type: "poured", model: "sample_bottle", into: "erlenmeyer_flask" },
   { type: "placed", model: "cuvette", zone: "turbidimeter_socket" },
@@ -66,7 +66,8 @@ test("switching the lever off removes the step", () => {
 });
 
 test("zones accept only their items", () => {
-  expect(findZone([-2.55, 1.2, 0.85], "safety_goggles")?.id).toBe("prep_zone");
+  expect(findZone([-2.55, 1.2, 0.85], "safety_goggles")).toBeNull();
+  expect(findZone([2.5, 1.2, 0.84], "cuvette")?.id).toBe("turbidimeter_socket");
   expect(findZone([-2.55, 1.2, 0.85], "lab_flask")).toBeNull();
   expect(findZone([0, 1, 0], "safety_goggles")).toBeNull();
 });

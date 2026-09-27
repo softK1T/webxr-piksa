@@ -112,10 +112,7 @@ function stepFor(event: ScenarioEvent): StepId | null {
     case "panel_opened":
       return "open_panel";
     case "placed":
-      if (
-        event.model === "safety_goggles" &&
-        (event.zone === "face" || event.zone === "prep_zone")
-      )
+      if (event.model === "safety_goggles" && event.zone === "face")
         return "goggles_to_prep";
       if (event.model === "cuvette" && event.zone === TURBIDIMETER_ZONE)
         return "tube_to_rack";
