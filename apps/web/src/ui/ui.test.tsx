@@ -46,11 +46,11 @@ test("quality maps to hardware scaling and settings map to XR", () => {
 });
 
 test("hint points to item, then to zone while holding", () => {
-  expect(hintTarget("goggles_to_prep", null)).toEqual({
+  expect(hintTarget("flask_to_bench", null)).toEqual({
     kind: "placement",
-    id: "goggles",
+    id: "flask",
   });
-  expect(hintTarget("goggles_to_prep", "safety_goggles")).toMatchObject({
+  expect(hintTarget("flask_to_bench", "lab_flask")).toMatchObject({
     kind: "point",
   });
   expect(hintTarget(null, null)).toBeNull();

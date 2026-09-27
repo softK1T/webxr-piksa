@@ -13,7 +13,11 @@ export const GRABBABLE: ReadonlySet<string> = new Set([
   "safety_goggles",
   "lab_flask",
   "test_tube",
+  "fire_extinguisher",
 ]);
+
+/** Releasing goggles closer than this puts them on (desktop hold distance). */
+export const RELEASE_WEAR_DISTANCE = 0.9;
 
 interface Held {
   anchor: TransformNode;
@@ -23,6 +27,7 @@ interface Held {
 }
 
 export class GrabSystem {
+  private heldId: string | undefined;
   private held: Held | null = null;
 
   constructor(
@@ -30,8 +35,44 @@ export class GrabSystem {
     private readonly onEvent: (event: ScenarioEvent) => void,
   ) {}
 
+  private nearFace(max: number): boolean {
+    const cam = this.scene.activeCamera;
+    if (!this.held || !cam) return false;
+    this.held.anchor.computeWorldMatrix(true);
+    return (
+      Vector3.Distance(
+        this.held.anchor.getAbsolutePosition(),
+        cam.globalPosition,
+      ) < max
+    );
+  }
+
+  /** Put the held goggles on: they disappear from the world (you are wearing them). */
+  wear(): boolean {
+    if (this.held?.model !== "safety_goggles") return false;
+    const { anchor } = this.held;
+    this.held = null;
+    anchor.setParent(null);
+    anchor.setEnabled(false);
+    this.onEvent({
+      type: "placed",
+      model: "safety_goggles",
+      zone: "face",
+      id: this.heldId,
+    });
+    return true;
+  }
+
   get heldModel(): string | null {
     return this.held?.model ?? null;
+  }
+
+  get heldAnchor(): TransformNode | null {
+    return this.held?.anchor ?? null;
+  }
+
+  get heldBy(): string | null {
+    return this.held?.holder ?? null;
   }
 
   get holding(): boolean {
@@ -60,12 +101,25 @@ export class GrabSystem {
       anchor.rotation.set(0, 0, 0);
     }
     this.held = { anchor, model: placement.model, home, holder };
-    this.onEvent({ type: "grabbed", model: placement.model });
+    this.heldId = placement.placementId;
+    this.onEvent({
+      type: "grabbed",
+      model: placement.model,
+      id: placement.placementId,
+    });
     return true;
   }
 
   release(holder: string): string | null {
     if (!this.held || this.held.holder !== holder) return null;
+    // letting go of goggles close to the face (desktop: they hang in front of the camera) = put on
+    if (
+      this.held.model === "safety_goggles" &&
+      this.nearFace(RELEASE_WEAR_DISTANCE)
+    ) {
+      this.wear();
+      return "face";
+    }
     const { anchor, model, home } = this.held;
     this.held = null;
     let node: BabylonNode | null = anchor.parent;
@@ -84,7 +138,12 @@ export class GrabSystem {
     const zone = findZone([pos.x, pos.y, pos.z], model);
     if (zone) anchor.position.set(...zone.snap);
     else anchor.position.copyFrom(home);
-    this.onEvent({ type: "placed", model, zone: zone?.id ?? null });
+    this.onEvent({
+      type: "placed",
+      model,
+      zone: zone?.id ?? null,
+      id: this.heldId,
+    });
     return zone?.id ?? null;
   }
 }

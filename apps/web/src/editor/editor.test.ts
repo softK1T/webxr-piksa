@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { MODEL_NAMES } from "../scene/labLayout";
+import { LAB_LAYOUT } from "../scene/labLayout";
 import { api, readJson } from "./api";
 import { layoutToConfig, modelLocation, parseSceneConfig } from "./sceneConfig";
 
@@ -7,7 +7,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 test("default layout converts to a valid config", () => {
   const config = layoutToConfig("lab");
-  expect(config.objects).toHaveLength(MODEL_NAMES.length);
+  expect(config.objects).toHaveLength(LAB_LAYOUT.length);
   const parsed = parseSceneConfig(JSON.parse(JSON.stringify(config)));
   expect(parsed.errors).toEqual([]);
   expect(

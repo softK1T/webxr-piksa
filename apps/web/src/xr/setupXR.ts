@@ -1,3 +1,7 @@
+import { Observable, type WebXRInputSource } from "@babylonjs/core";
+
+export const onXRControllerAdded = new Observable<WebXRInputSource>();
+export const onXRControllerRemoved = new Observable<WebXRInputSource>();
 import {
   AbstractMesh,
   Quaternion,
@@ -54,6 +58,22 @@ export interface XRController {
   applySettings(settings: XRSettings): void;
   readonly isInXR: boolean;
   dispose(): void;
+}
+
+export const XR_SPAWN = { x: 0, z: -2.6, yaw: 0 } as const;
+
+/** Put the XR rig at the spawn point facing the benches, keeping the tracked head height. */
+export function resetXRPose(camera: {
+  position: { x: number; y: number; z: number };
+  rotationQuaternion: Quaternion | null;
+}) {
+  camera.position.x = XR_SPAWN.x;
+  camera.position.z = XR_SPAWN.z;
+  camera.rotationQuaternion = Quaternion.RotationYawPitchRoll(
+    XR_SPAWN.yaw,
+    0,
+    0,
+  );
 }
 
 export function nextMode(mode: LocomotionMode): LocomotionMode {
@@ -127,7 +147,19 @@ export async function setupXR(
   };
   setMode(settings.mode);
 
+  const desktop = scene.getCameraByName("camera_desktop");
+  const canvas = scene.getEngine().getRenderingCanvas();
+  xr.baseExperience.onStateChangedObservable.add((state) => {
+    if (state === WebXRState.IN_XR) {
+      desktop?.detachControl();
+      resetXRPose(xr.baseExperience.camera);
+    } else if (state === WebXRState.NOT_IN_XR && desktop && canvas) {
+      desktop.attachControl(canvas, true);
+    }
+  });
+
   xr.input.onControllerAddedObservable.add((source) => {
+    onXRControllerAdded.notifyObservers(source);
     source.onMotionControllerInitObservable.add((motion) => {
       const bind = (componentId: string, action: "trigger" | "squeeze") =>
         motion

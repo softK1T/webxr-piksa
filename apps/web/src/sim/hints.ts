@@ -11,19 +11,23 @@ const zone = (id: string): HintTarget => {
 };
 const item = (id: string): HintTarget => ({ kind: "placement", id });
 
+/** The yellow marker waits: players search first, help comes when stuck or after a mistake. */
+export const HINT_DELAY_MS = 40_000;
+
 export function hintTarget(
   step: StepId | null,
   held: string | null,
+  sampleId = "flask",
 ): HintTarget {
   switch (step) {
     case "open_panel":
-      return { kind: "point", position: [0, 1.2, 3.5] };
+      return { kind: "point", position: [0, 2.05, 3.6] };
     case "goggles_to_prep":
-      return held === "safety_goggles" ? zone("prep_zone") : item("goggles");
+      return held === "safety_goggles" ? null : item("goggles");
     case "find_flask":
-      return item("flask");
+      return item(sampleId);
     case "flask_to_bench":
-      return held === "lab_flask" ? zone("workbench_zone") : item("flask");
+      return held === "lab_flask" ? zone("workbench_zone") : item(sampleId);
     case "tube_to_rack":
       return held === "test_tube" ? zone("rack_zone") : item("tube");
     case "select_container":

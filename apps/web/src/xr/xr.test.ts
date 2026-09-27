@@ -56,3 +56,12 @@ test("highlights only meshes of selected placement", () => {
   expect(applyHighlight(meshes, null)).toBe(0);
   expect(placementOf(meshes[3])).toBeNull();
 });
+
+test("resetXRPose moves the rig to the spawn point inside the room", async () => {
+  const { resetXRPose, XR_SPAWN } = await import("./setupXR");
+  const cam = { position: { x: 9, y: 1.6, z: 9 }, rotationQuaternion: null };
+  resetXRPose(cam);
+  expect(cam.position).toEqual({ x: XR_SPAWN.x, y: 1.6, z: XR_SPAWN.z });
+  expect(Math.abs(cam.position.z)).toBeLessThan(4);
+  expect(cam.rotationQuaternion).not.toBeNull();
+});

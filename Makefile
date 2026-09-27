@@ -39,3 +39,8 @@ validate-models:
 
 e2e:
 	cd apps/web && npx playwright test
+
+.PHONY: textures
+BLENDER ?= $(shell command -v blender || mdfind "kMDItemCFBundleIdentifier == 'org.blenderfoundation.blender'" | head -1 | sed 's#$$#/Contents/MacOS/Blender#')
+textures:
+	"$(BLENDER)" -b -P tools/blender/textures/bake_textures.py -- apps/web/public/textures 1024 || (test -x tools/.venv/bin/python || (python3 -m venv tools/.venv && tools/.venv/bin/pip install -q numpy pillow)) && tools/.venv/bin/python tools/textures/gen_textures.py apps/web/public/textures 1024

@@ -18,7 +18,7 @@ test("room contains required static elements", () => {
     "ceiling",
     "wall_north",
     "wall_south",
-    "wall_east",
+    "wall_east_a",
     "wall_west",
     "door",
     "table_a",

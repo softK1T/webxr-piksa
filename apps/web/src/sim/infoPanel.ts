@@ -37,11 +37,18 @@ export function createInfoPanel(scene: Scene) {
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 44px sans-serif";
-    ctx.fillText("Lab procedure", 40, 70);
+    ctx.fillText("Order form", 40, 70);
     if (state.status === "idle") {
       ctx.font = "34px sans-serif";
       ctx.fillText("Click or pull the trigger to open.", 40, 160);
     } else {
+      ctx.fillStyle = "#ffd166";
+      ctx.font = "bold 32px sans-serif";
+      ctx.fillText(
+        `Sample No. ${state.sampleNo}  -  analysis in neutral buffer`,
+        40,
+        120,
+      );
       ctx.font = "28px sans-serif";
       STEPS.forEach((step, i) => {
         const done = state.completed.includes(step.id);
@@ -49,7 +56,7 @@ export function createInfoPanel(scene: Scene) {
         ctx.fillText(
           `${done ? "[x]" : "[ ]"} ${i + 1}. ${step.title}`,
           40,
-          130 + i * 44,
+          170 + i * 42,
         );
       });
     }

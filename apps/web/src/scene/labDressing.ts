@@ -7,11 +7,13 @@ import {
   type Scene,
   type TransformNode,
 } from "@babylonjs/core";
+import { createBevelBox } from "./bevelBox";
 import {
   ITEM_LABELS,
   LAB_LAYOUT,
   LAB_ZONES,
   ROOM,
+  labelHeight,
   zoneOf,
   type Vec3,
 } from "./labLayout";
@@ -99,7 +101,7 @@ export function dressLab(scene: Scene): void {
       zone.title,
       zone.labelPosition,
       zone.labelRotationY,
-      { height: 0.24, accent: zone.color },
+      { height: 0.15, accent: zone.color },
     );
   }
   for (const p of LAB_LAYOUT) {
@@ -107,7 +109,7 @@ export function dressLab(scene: Scene): void {
     const zone = zoneOf(p.id);
     if (!text || !zone) continue;
     const [x, y, z] = p.position;
-    const lift = y > 0.5 ? 0.32 : 0.75;
+    const lift = labelHeight(p.model, p.scale ?? 1);
     const toward =
       zone.labelRotationY === 0
         ? ([0, 0, -0.12] as const)
@@ -122,7 +124,7 @@ export function dressLab(scene: Scene): void {
       text,
       [x + toward[0], y + lift, z + toward[2]],
       zone.labelRotationY === Math.PI ? Math.PI : zone.labelRotationY,
-      { accent: zone.color },
+      { height: 0.055, accent: zone.color },
     );
   }
 }
@@ -143,6 +145,18 @@ export function mountInfoPanel(scene: Scene, screenCenterY = 1.6): boolean {
   anchor.position.y += screenCenterY - (min.y + max.y) / 2;
   anchor.position.z += ROOM.depth / 2 - 0.04 - max.z;
   anchor.computeWorldMatrix(true);
+  const screen = scene.getMeshByName("info_screen");
+  if (screen) {
+    const b = anchor.getHierarchyBoundingVectors(true, (m) => m.isEnabled());
+    const width = (b.max.x - b.min.x) * 0.86;
+    const s = width / 1.4;
+    screen.scaling.set(s, s, 1);
+    screen.position.set(
+      (b.min.x + b.max.x) / 2,
+      (b.min.y + b.max.y) / 2,
+      b.min.z - 0.012,
+    );
+  }
   return true;
 }
 
@@ -168,7 +182,7 @@ export function createDropZones(scene: Scene): void {
     const [cx, cy, cz] = zone.center;
     const w = zone.half[0] * 2;
     const d = zone.half[2] * 2;
-    const pad = MeshBuilder.CreateBox(
+    const pad = createBevelBox(
       DROP_PREFIX + zone.id,
       { width: w, depth: d, height: 0.004 },
       scene,
@@ -184,7 +198,7 @@ export function createDropZones(scene: Scene): void {
       [w / 2, 0, t, d],
     ];
     edges.forEach(([ox, oz, ew, ed], i) => {
-      const bar = MeshBuilder.CreateBox(
+      const bar = createBevelBox(
         `${DROP_PREFIX}${zone.id}_edge${i}`,
         { width: ew, depth: ed, height: 0.008 },
         scene,
@@ -193,13 +207,14 @@ export function createDropZones(scene: Scene): void {
       bar.material = edge;
       bar.isPickable = false;
     });
-    createLabel(
+    const flat = createLabel(
       scene,
       `${DROP_PREFIX}${zone.id}`,
       zone.label,
-      [cx, cy + 0.18, cz - zone.half[2] - 0.02],
+      [cx, cy + 0.006, cz - zone.half[2] - 0.035],
       0,
-      { height: 0.08, accent: [0.3, 1, 0.65] },
+      { height: 0.045, accent: [0.3, 1, 0.65] },
     );
+    flat.rotation.x = Math.PI / 2;
   }
 }

@@ -1,29 +1,35 @@
 export const REQUIRED_CONTAINER = "colored_container_blue";
 
 export const STEPS = [
-  { id: "open_panel", title: "Open the information panel" },
+  {
+    id: "open_panel",
+    title: "Read the order",
+  },
   {
     id: "goggles_to_prep",
-    title: "Put the safety goggles on the goggles check pad",
+    title: "Put on your goggles",
   },
-  { id: "find_flask", title: "Find the lab flask" },
+  { id: "find_flask", title: "Find the ordered sample" },
   {
     id: "flask_to_bench",
-    title: "Carry the flask to the pad at the measurement device",
+    title: "Put the sample into the analyzer",
   },
-  { id: "tube_to_rack", title: "Put the test tube into the rack" },
-  { id: "select_container", title: "Select the blue container" },
-  { id: "toggle_lever", title: "Switch the lever on" },
-  { id: "press_start", title: "Press the start button" },
+  { id: "tube_to_rack", title: "Put the filled tube into the holder" },
+  {
+    id: "select_container",
+    title: "Add the reagent from the order",
+  },
+  { id: "toggle_lever", title: "Power up the analyzer" },
+  { id: "press_start", title: "Run the analysis" },
 ] as const;
 
 export type StepId = (typeof STEPS)[number]["id"];
 
 export type ScenarioEvent =
   | { type: "panel_opened" }
-  | { type: "grabbed"; model: string }
-  | { type: "placed"; model: string; zone: string | null }
-  | { type: "selected"; model: string }
+  | { type: "grabbed"; model: string; id?: string }
+  | { type: "placed"; model: string; zone: string | null; id?: string }
+  | { type: "selected"; model: string; id?: string }
   | { type: "lever"; on: boolean }
   | { type: "button" }
   | { type: "reset" };
@@ -36,15 +42,41 @@ export interface ScenarioState {
   message: string;
   leverOn: boolean;
   mistakes: number;
+  /** placement id of the flask named on the order form */
+  sampleId: string;
+  sampleNo: number;
 }
 
 export const initialScenario: ScenarioState = {
   completed: [],
   status: "idle",
-  message: "Open the information panel to begin.",
+  message: "Night shift. The order form is on the panel.",
   leverOn: false,
   mistakes: 0,
+  sampleId: "flask",
+  sampleNo: 7,
 };
+
+/** Five identical flasks, told apart only by the number on their tag. */
+export const SAMPLE_FLASKS = [
+  { id: "flask", no: 7 },
+  { id: "flask_2", no: 3 },
+  { id: "flask_3", no: 5 },
+  { id: "flask_4", no: 8 },
+  { id: "flask_5", no: 9 },
+] as const;
+
+/** New run with a random ordered sample. */
+export function newScenario(rand: () => number = Math.random): ScenarioState {
+  const f = SAMPLE_FLASKS[Math.floor(rand() * SAMPLE_FLASKS.length)];
+  return { ...initialScenario, sampleId: f.id, sampleNo: f.no };
+}
+
+const isOtherFlask = (event: ScenarioEvent, state: ScenarioState) =>
+  "model" in event &&
+  event.model === "lab_flask" &&
+  event.id !== undefined &&
+  event.id !== state.sampleId;
 
 const title = (id: StepId) => STEPS.find((s) => s.id === id)?.title ?? id;
 
@@ -59,7 +91,10 @@ function stepFor(event: ScenarioEvent): StepId | null {
     case "panel_opened":
       return "open_panel";
     case "placed":
-      if (event.model === "safety_goggles" && event.zone === "prep_zone")
+      if (
+        event.model === "safety_goggles" &&
+        (event.zone === "face" || event.zone === "prep_zone")
+      )
         return "goggles_to_prep";
       if (event.model === "lab_flask" && event.zone === "workbench_zone")
         return "flask_to_bench";
@@ -87,14 +122,14 @@ function validate(state: ScenarioState): ScenarioState {
       ...state,
       status: "failed",
       mistakes: state.mistakes + 1,
-      message: `Sequence incomplete. Missing step: ${missing[0].title}.`,
+      message: `Not ready yet: ${missing[0].title.toLowerCase()}.`,
     };
   }
   return {
     ...state,
     completed: [...state.completed, "press_start"],
     status: "success",
-    message: "Experiment completed successfully!",
+    message: "Sample is clean. The range is open.",
   };
 }
 
@@ -102,7 +137,22 @@ export function reduceScenario(
   state: ScenarioState,
   event: ScenarioEvent,
 ): ScenarioState {
-  if (event.type === "reset") return initialScenario;
+  if (event.type === "reset")
+    return {
+      ...initialScenario,
+      sampleId: state.sampleId,
+      sampleNo: state.sampleNo,
+    };
+  if (state.status !== "success" && isOtherFlask(event, state)) {
+    // picking flasks up to read their tags is fine; taking the wrong one to the device is not
+    if (event.type === "placed" && event.zone === "workbench_zone")
+      return {
+        ...state,
+        mistakes: state.mistakes + 1,
+        message: `Wrong sample. The order says No. ${state.sampleNo}.`,
+      };
+    return state;
+  }
   if (state.status === "success") return state;
   let s = state;
   if (event.type === "lever") {
@@ -121,7 +171,7 @@ export function reduceScenario(
       ...s,
       status: "running",
       mistakes: s.mistakes + 1,
-      message: `Wrong container (${color}). Select the blue container.`,
+      message: `Wrong reagent (${color}). Check the order form.`,
     };
   }
   const step = stepFor(event);

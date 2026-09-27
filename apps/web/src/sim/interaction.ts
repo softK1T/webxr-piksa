@@ -15,6 +15,7 @@ export function createInteraction(
   scene: Scene,
   grab: GrabSystem,
   dispatch: (event: ScenarioEvent) => void,
+  onHeldTrigger?: (pressed: boolean, action: ControllerAction) => boolean,
 ) {
   let leverOn = false;
 
@@ -42,7 +43,11 @@ export function createInteraction(
         dispatch({ type: "panel_opened" });
         return;
       default:
-        dispatch({ type: "selected", model: placement.model });
+        dispatch({
+          type: "selected",
+          model: placement.model,
+          id: placement.placementId,
+        });
     }
   };
 
@@ -58,6 +63,7 @@ export function createInteraction(
     },
     controller(action: ControllerAction) {
       if (action.action === "trigger") {
+        if (onHeldTrigger?.(action.pressed, action)) return;
         if (action.pressed) activate(action.mesh);
         return;
       }

@@ -1,18 +1,33 @@
+import { Ray, Vector3, type WebXRInputSource } from "@babylonjs/core";
 import { Engine, PointerEventTypes, UniversalCamera } from "@babylonjs/core";
 import { useEffect, useRef, useState } from "react";
 import { BASE_CAMERA_SPEED, createLabScene } from "../scene/createLabScene";
 import { LAB_LAYOUT } from "../scene/labLayout";
-import { LodManager, applyQuality, freezeStatic } from "../scene/quality";
+import {
+  LodManager,
+  applyQuality,
+  createLightZones,
+  freezeStatic,
+} from "../scene/quality";
 import { mountInfoPanel } from "../scene/labDressing";
 import { loadLabModels, type LoadProgress } from "../scene/loadLabModels";
 import { GrabSystem } from "../sim/grab";
 import { createHintMarker } from "../sim/hintMarker";
-import { hintTarget } from "../sim/hints";
+import { createTubeTint } from "../sim/tubeTint";
+import { HINT_DELAY_MS, hintTarget } from "../sim/hints";
 import { createInfoPanel } from "../sim/infoPanel";
+import { createWristPanel } from "../sim/wristPanel";
+import { createFoamSprayer, forwardOf } from "../sim/extinguisher";
+import { createBlaster } from "../sim/blaster";
+import { createShootingRange } from "../sim/range";
+import { applyWarmLighting } from "../scene/lighting";
+import { applyRoomTextures } from "../scene/textures";
+import { applyLowPolyStyle } from "../scene/lowpoly";
 import { createInteraction } from "../sim/interaction";
 import {
   STEPS,
   initialScenario,
+  newScenario,
   nextStep,
   reduceScenario,
   type ScenarioEvent,
@@ -29,6 +44,8 @@ import {
 import type { SelectionEvent } from "../xr/selection";
 import {
   emitSelection,
+  onXRControllerAdded,
+  onXRControllerRemoved,
   setupXR,
   type XRController,
   type XREvents,
@@ -66,6 +83,30 @@ export default function LabCanvas() {
   const [selected, setSelected] = useState<SelectionEvent | null>(null);
   const [scenario, setScenario] = useState<ScenarioState>(initialScenario);
   const [finishedIn, setFinishedIn] = useState<number | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [blasterOn, setBlasterOn] = useState(false);
+  const blasterRef = useRef<ReturnType<typeof createBlaster> | null>(null);
+  const toggleBlaster = () =>
+    setBlasterOn((on) => {
+      blasterRef.current?.setEnabled(!on);
+      return !on;
+    });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (
+        e.key.toLowerCase() === "g" &&
+        !(e.target instanceof HTMLInputElement)
+      )
+        toggleBlaster();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  useEffect(() => {
+    if (!toast) return;
+    const id = window.setTimeout(() => setToast(null), 3500);
+    return () => window.clearTimeout(id);
+  }, [toast]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -92,16 +133,128 @@ export default function LabCanvas() {
           : null,
     };
     const panel = createInfoPanel(scene);
-    let state = initialScenario;
+    const tubeTint = createTubeTint(scene);
+    let state = newScenario();
     panel.draw(state);
+    tubeTint.update(state);
+    const wrist = createWristPanel(scene);
+    const range = createShootingRange(scene, {
+      isUnlocked: () => state.status === "success",
+      onToast: (message) => {
+        if (!disposed) setToast(message);
+      },
+    });
+    applyRoomTextures(scene);
+    const lighting = applyWarmLighting(scene);
+    const lightZones = createLightZones(scene);
+    const lowpoly = applyLowPolyStyle(scene);
+    const blaster = createBlaster(scene, {
+      onRayHit: (mesh, point) => range.hit(mesh, point),
+      onHit: (model, total) => {
+        if (disposed) return;
+        const what = model === "lab_flask" ? "flask" : "test tube";
+        setToast(`Pew! Broke a ${what}. Total glassware lost: ${total}`);
+      },
+    });
+    blasterRef.current = blaster;
+    let rightSource: { inputSource: XRInputSource } | null = null;
+    let bWasDown = false;
+    const pollB = scene.onBeforeRenderObservable.add(() => {
+      const pad = rightSource?.inputSource.gamepad;
+      const down = !!pad?.buttons[5]?.pressed;
+      if (down && !bWasDown) {
+        console.info("[blaster] B pressed -> toggle");
+        toggleBlaster();
+      }
+      bWasDown = down;
+    });
+    const onGun = onXRControllerAdded.add((source) => {
+      xrSources.set(source.inputSource.handedness, source);
+      if (source.inputSource.handedness !== "right") return;
+      blaster.attachToController(source);
+      rightSource = source;
+    });
+    wrist.draw(state);
+    const onAdd = onXRControllerAdded.add((source) => {
+      if (source.inputSource.handedness === "left")
+        wrist.attach(source.grip ?? source.pointer);
+    });
+    const onRemove = onXRControllerRemoved.add((source) => {
+      if (source.inputSource.handedness === "left") wrist.detach();
+    });
     const dispatch = (event: ScenarioEvent) => {
       state = reduceScenario(state, event);
       panel.draw(state);
+      tubeTint.update(state);
+      wrist.draw(state);
       if (!disposed) setScenario(state);
     };
     const grab = new GrabSystem(scene, dispatch);
-    const interaction = createInteraction(scene, grab, dispatch);
-    createHintMarker(scene, () => hintTarget(nextStep(state), grab.heldModel));
+    const foam = createFoamSprayer(scene);
+    const xrSources = new Map<string, WebXRInputSource>();
+    const holdsExtinguisher = () => grab.heldModel === "fire_extinguisher";
+    const interaction = createInteraction(
+      scene,
+      grab,
+      dispatch,
+      (pressed, action) => {
+        if (blasterRef.current?.enabled && action.hand === "right") {
+          if (pressed) blasterRef.current.fireFromGun();
+          return true;
+        }
+        if (!holdsExtinguisher() || grab.heldBy !== action.hand) return false;
+        const anchor = grab.heldAnchor;
+        const src = xrSources.get(action.hand);
+        if (pressed && anchor && src) {
+          const ray = new Ray(Vector3.Zero(), Vector3.Forward());
+          foam.start(
+            anchor,
+            () => {
+              src.getWorldPointerRayToRef(ray);
+              return ray.direction.clone();
+            },
+            () => {
+              src.getWorldPointerRayToRef(ray);
+              return ray.origin.add(ray.direction.scale(0.08));
+            },
+          );
+        } else if (pressed && anchor)
+          foam.start(anchor, () => forwardOf(action.grip));
+        else foam.stop();
+        return true;
+      },
+    );
+    const onSprayKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== "f" || e.repeat) return;
+      const anchor = grab.heldAnchor;
+      if (e.type === "keydown" && holdsExtinguisher() && anchor) {
+        foam.start(anchor, () =>
+          scene.activeCamera
+            ? scene.activeCamera.getForwardRay().direction
+            : new Vector3(0, 0, 1),
+        );
+      } else if (e.type === "keyup") foam.stop();
+    };
+    window.addEventListener("keydown", onSprayKey);
+    window.addEventListener("keyup", onSprayKey);
+    let hintStep: string | null = null;
+    let hintSince = performance.now();
+    let hintMistakes = 0;
+    createHintMarker(scene, () => {
+      const step = nextStep(state);
+      if (step !== hintStep) {
+        hintStep = step;
+        hintSince = performance.now();
+      }
+      if (state.mistakes !== hintMistakes) {
+        hintMistakes = state.mistakes;
+        hintSince = -Infinity; // a mistake shows the way right away
+      }
+      const stuck = performance.now() - hintSince > HINT_DELAY_MS;
+      return step === "open_panel" || stuck
+        ? hintTarget(step, grab.heldModel, state.sampleId)
+        : null;
+    });
     const events: XREvents = {
       onStateChange: (value) => {
         if (!disposed) setInXR(value);
@@ -155,6 +308,19 @@ export default function LabCanvas() {
     const onResize = () => engine.resize();
     window.addEventListener("resize", onResize);
     return () => {
+      onXRControllerAdded.remove(onAdd);
+      window.removeEventListener("keydown", onSprayKey);
+      window.removeEventListener("keyup", onSprayKey);
+      foam.dispose();
+      onXRControllerAdded.remove(onGun);
+      scene.onBeforeRenderObservable.remove(pollB);
+      blaster.dispose();
+      range.dispose();
+      lighting.dispose();
+      lightZones.dispose();
+      lowpoly.dispose();
+      blasterRef.current = null;
+      onXRControllerRemoved.remove(onRemove);
       disposed = true;
       window.removeEventListener("resize", onResize);
       xrRef.current?.dispose();
@@ -220,6 +386,9 @@ export default function LabCanvas() {
         className="lab-canvas"
         aria-label="Virtual laboratory"
       />
+      <div className="toast-layer" role="status">
+        {toast && <div className="toast">{toast}</div>}
+      </div>
 
       {screen === "lab" && (
         <div className="xr-bar">
@@ -232,6 +401,35 @@ export default function LabCanvas() {
             </button>
           )}
           <button onClick={() => setScreen("settings")}>Settings</button>
+          <button onClick={toggleBlaster} title="Toggle blaster (G)">
+            {blasterOn ? "Holster" : "Blaster"}
+          </button>
+          <button onClick={restart} title="Reset the level to the start">
+            Restart
+          </button>
+        </div>
+      )}
+
+      {screen === "lab" && (
+        <div
+          className={`task-card task-${scenario.status}`}
+          data-testid="current-task"
+        >
+          {(() => {
+            const id = nextStep(scenario);
+            const index = STEPS.findIndex((st) => st.id === id);
+            if (scenario.status === "success")
+              return <strong>All tasks done</strong>;
+            if (!id) return null;
+            return (
+              <>
+                <span className="task-step">
+                  Task {index + 1} / {STEPS.length}
+                </span>
+                <strong>{STEPS[index].title}</strong>
+              </>
+            );
+          })()}
         </div>
       )}
 
@@ -246,7 +444,7 @@ export default function LabCanvas() {
           ) : (
             <p>
               WASD / arrows: move, hold left mouse button: look, click: interact
-              / pick up / drop
+              / pick up / drop, hold F with the extinguisher: spray foam
             </p>
           )}
           <div

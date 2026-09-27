@@ -40,7 +40,29 @@ def palette(accent):
     }
 
 
+AUTO_BEVEL = 0.004  # metres; 45-degree chamfer on every hard edge
+AUTO_BEVEL_ANGLE = 0.52  # radians (~30 deg): only real edges, smooth curvature untouched
+
+
+def _auto_bevel(obj):
+    import bpy
+    if obj.type != "MESH" or any(m.type == "BEVEL" for m in obj.modifiers):
+        return
+    dims = [d for d in obj.dimensions if d > 1e-5]
+    if not dims:
+        return
+    mod = obj.modifiers.new("AutoBevel", "BEVEL")
+    mod.width = min(AUTO_BEVEL, min(dims) * 0.15)
+    mod.segments = 1
+    mod.limit_method = "ANGLE"
+    mod.angle_limit = AUTO_BEVEL_ANGLE
+    mod.harden_normals = False
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+
+
 def _done(obj, name, mat):
+    _auto_bevel(obj)
     obj.name = name
     obj.data.name = name
     obj.data.materials.append(mat)

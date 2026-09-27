@@ -20,6 +20,7 @@ coverage/
 PLAN_GPT6_SOLUTION.md
 uploads/
 apps/api/uploads/
+*.md
 
 .env.*
 !.env.example
@@ -38,3 +39,4 @@ certs/
 .vscode/
 apps/api/e2e.db
 apps/api/e2e-uploads/
+tools/.venv/

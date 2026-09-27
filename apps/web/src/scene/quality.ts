@@ -77,8 +77,16 @@ export function applyQuality(scene: Scene, quality: Quality): QualityProfile {
 export function freezeStatic(scene: Scene): number {
   let frozen = 0;
   for (const mesh of scene.meshes) {
-    const meta = mesh.metadata as { placementId?: string } | null;
-    if (meta?.placementId || mesh.isPickable || mesh.isWorldMatrixFrozen)
+    const meta = mesh.metadata as {
+      placementId?: string;
+      dynamic?: boolean;
+    } | null;
+    if (
+      meta?.placementId ||
+      meta?.dynamic ||
+      mesh.isPickable ||
+      mesh.isWorldMatrixFrozen
+    )
       continue;
     mesh.freezeWorldMatrix();
     mesh.doNotSyncBoundingInfo = true;
@@ -133,4 +141,53 @@ export class LodManager {
       });
     }
   }
+}
+
+/** x of the wall between lab and shooting range. */
+export const RANGE_WALL_X = -5;
+
+/**
+ * Which ceiling lamps may be on. The quality cap (maxDynamicLights) used to keep
+ * the first N lamps in creation order ON - always lab lamps - so the range lamps
+ * were switched off for good. Now the cap is spent on the zone the player is in:
+ * lab lamps in the lab, range lamps in the range (far/target lamp first).
+ */
+export function lampsToEnable(
+  lamps: { name: string; x: number }[],
+  inRange: boolean,
+  cap: number,
+): Set<string> {
+  const zone = lamps.filter((l) => l.x < RANGE_WALL_X === inRange);
+  let order = zone;
+  if (inRange) {
+    const byX = [...zone].sort((a, b) => a.x - b.x);
+    order =
+      byX.length > 1 ? [byX[0], byX[byX.length - 1], ...byX.slice(1, -1)] : byX;
+  }
+  return new Set(order.slice(0, cap).map((l) => l.name));
+}
+
+export function createLightZones(scene: Scene) {
+  let acc = 0;
+  const obs = scene.onBeforeRenderObservable.add(() => {
+    acc += scene.getEngine().getDeltaTime();
+    if (acc < 250) return;
+    acc = 0;
+    const cam = scene.activeCamera;
+    if (!cam) return;
+    const lamps = scene.lights.filter((l) => l.name.startsWith("mood_lamp_"));
+    const want = lampsToEnable(
+      lamps.map((l) => ({
+        name: l.name,
+        x: (l as unknown as { position: { x: number } }).position.x,
+      })),
+      cam.globalPosition.x < RANGE_WALL_X,
+      profileOf(scene).maxDynamicLights,
+    );
+    for (const l of lamps) {
+      const on = want.has(l.name);
+      if (l.isEnabled() !== on) l.setEnabled(on); // only changes when crossing the door
+    }
+  });
+  return { dispose: () => scene.onBeforeRenderObservable.remove(obs) };
 }
