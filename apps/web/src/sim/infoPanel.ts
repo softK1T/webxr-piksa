@@ -6,7 +6,7 @@ import {
   Scene,
   StandardMaterial,
 } from "@babylonjs/core";
-import { STEPS, type ScenarioState } from "./scenario";
+import { STEPS, reportLines, type ScenarioState } from "./scenario";
 
 const W = 1024;
 const H = 600;
@@ -37,28 +37,38 @@ export function createInfoPanel(scene: Scene) {
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 44px sans-serif";
-    ctx.fillText("Order form", 40, 70);
+    ctx.fillText(
+      state.status === "success" ? "Test report" : "Request from a well owner",
+      40,
+      70,
+    );
     if (state.status === "idle") {
       ctx.font = "34px sans-serif";
-      ctx.fillText("Click or pull the trigger to open.", 40, 160);
+      ctx.fillText("A parcel is waiting by the door. Open it.", 40, 160);
     } else {
       ctx.fillStyle = "#ffd166";
       ctx.font = "bold 32px sans-serif";
       ctx.fillText(
-        `Sample No. ${state.sampleNo}  -  analysis in neutral buffer`,
+        "Water turned cloudy after rain. Is it safe to drink?",
         40,
         120,
       );
       ctx.font = "28px sans-serif";
-      STEPS.forEach((step, i) => {
-        const done = state.completed.includes(step.id);
-        ctx.fillStyle = done ? "#7dffa0" : "#ffffff";
-        ctx.fillText(
-          `${done ? "[x]" : "[ ]"} ${i + 1}. ${step.title}`,
-          40,
-          170 + i * 42,
-        );
-      });
+      if (state.status === "success") {
+        ctx.fillStyle = "#ffffff";
+        reportLines(state)
+          .slice(0, 9)
+          .forEach((line, i) => ctx.fillText(line, 40, 170 + i * 42));
+      } else
+        STEPS.forEach((step, i) => {
+          const done = state.completed.includes(step.id);
+          ctx.fillStyle = done ? "#7dffa0" : "#ffffff";
+          ctx.fillText(
+            `${done ? "[x]" : "[ ]"} ${i + 1}. ${step.title}`,
+            40,
+            170 + i * 42,
+          );
+        });
     }
     const colors: Record<string, string> = {
       success: "#7dffa0",

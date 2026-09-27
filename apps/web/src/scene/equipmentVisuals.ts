@@ -108,6 +108,7 @@ export function createEquipmentVisuals(scene: Scene) {
     ctx.fillStyle = "#b8f5a0";
     ctx.font = "bold 30px monospace";
     text
+      .replace(/ {2,}/g, "\n")
       .split("\n")
       .slice(0, 3)
       .forEach((line, i) => ctx.fillText(line, 12, 40 + i * 36));
