@@ -13,6 +13,11 @@ test("equipment clicks map to scenario events", () => {
     type: "poured",
     into: "erlenmeyer_flask",
   });
+  expect(clickEvent("cuvette", "erlenmeyer_flask", false)).toMatchObject({
+    type: "poured",
+    into: "cuvette",
+  });
+  expect(clickEvent("cuvette", null, false)).toBeNull();
   expect(clickEvent("goggles", null, false)).toBeNull();
 });
 

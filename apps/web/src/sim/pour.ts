@@ -26,17 +26,26 @@ export function isPouring(tilt: number, bottle: Vec3, mouth: Vec3): boolean {
   );
 }
 
-export function flaskMouthOf(scene: Scene): Vec3 {
-  const node = scene.getTransformNodeByName("place_erlenmeyer");
+export function mouthOf(
+  scene: Scene,
+  placementId: string,
+  height: number,
+): Vec3 {
+  const node = scene.getTransformNodeByName(`place_${placementId}`);
   if (node) {
     const p = node.getAbsolutePosition();
-    return [p.x, p.y + MOUTH_HEIGHT, p.z];
+    return [p.x, p.y + height, p.z];
   }
-  const [x, y, z] = LAB_LAYOUT.find((p) => p.id === "erlenmeyer")?.position ?? [
+  const [x, y, z] = LAB_LAYOUT.find((p) => p.id === placementId)?.position ?? [
     0, 0, 0,
   ];
-  return [x, y + MOUTH_HEIGHT, z];
+  return [x, y + height, z];
 }
+
+export const flaskMouthOf = (scene: Scene): Vec3 =>
+  mouthOf(scene, "erlenmeyer", MOUTH_HEIGHT);
+export const cuvetteMouthOf = (scene: Scene): Vec3 =>
+  mouthOf(scene, "cuvette", 0.1);
 
 /** Per-frame check that exists ONLY while the bottle is held (start on grab, stop on release). */
 export function createPourWatcher(

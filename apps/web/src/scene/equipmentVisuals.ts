@@ -32,12 +32,18 @@ export function equipmentView(state: ScenarioState): EquipmentView {
   const filtered = done("toggle_lever");
   return {
     bottle: state.flaskFilled ? 0 : 1,
-    flask: state.flaskFilled ? (filtered ? 0.25 : 1) : 0,
-    cuvette: done("tube_to_rack") ? 1 : 0,
+    flask: state.flaskFilled
+      ? filtered
+        ? 0.25
+        : state.cuvetteFilled
+          ? 0.9
+          : 1
+      : 0,
+    cuvette: state.cuvetteFilled ? 1 : 0,
     filtrate: filtered ? 1 : 0,
     filterStained: filtered,
     turbidimeter: done("tube_to_rack")
-      ? turbidimeterScreen(state.sample, state.flaskFilled)
+      ? turbidimeterScreen(state.sample, state.cuvetteFilled)
       : "READY",
     phMeter: done("press_start")
       ? phMeterScreen(readPhMeter(state.sample, state.calibrated))

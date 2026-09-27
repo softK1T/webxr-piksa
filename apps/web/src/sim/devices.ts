@@ -19,6 +19,11 @@ export function clickEvent(
       return held === "sample_bottle"
         ? { type: "poured", model: "sample_bottle", into: "erlenmeyer_flask" }
         : null;
+    case "cuvette":
+      // desktop fallback: click the cuvette while holding the flask = fill it
+      return held === "erlenmeyer_flask"
+        ? { type: "poured", model: "erlenmeyer_flask", into: "cuvette" }
+        : null;
     default:
       return null;
   }

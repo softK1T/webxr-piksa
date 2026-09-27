@@ -11,7 +11,7 @@ import {
 } from "../scene/quality";
 import { loadLabModels, type LoadProgress } from "../scene/loadLabModels";
 import { GrabSystem } from "../sim/grab";
-import { createPourWatcher, flaskMouthOf } from "../sim/pour";
+import { createPourWatcher, cuvetteMouthOf, flaskMouthOf } from "../sim/pour";
 import { clickEvent, openParcelLid } from "../sim/devices";
 import { createHintMarker } from "../sim/hintMarker";
 import { HINT_DELAY_MS, hintTarget } from "../sim/hints";
@@ -205,11 +205,28 @@ export default function LabCanvas() {
           into: "erlenmeyer_flask",
         }),
     );
+    const flaskPour = createPourWatcher(
+      scene,
+      () => (grab.heldModel === "erlenmeyer_flask" ? grab.heldAnchor : null),
+      () => cuvetteMouthOf(scene),
+      () =>
+        dispatch({
+          type: "poured",
+          model: "erlenmeyer_flask",
+          into: "cuvette",
+        }),
+    );
     const grab = new GrabSystem(scene, (event) => {
       dispatch(event);
-      if (!("model" in event) || event.model !== "sample_bottle") return;
-      if (event.type === "grabbed") pour.start();
-      else if (event.type === "placed") pour.stop();
+      if (!("model" in event)) return;
+      const watcher =
+        event.model === "sample_bottle"
+          ? pour
+          : event.model === "erlenmeyer_flask"
+            ? flaskPour
+            : null;
+      if (event.type === "grabbed") watcher?.start();
+      else if (event.type === "placed") watcher?.stop();
     });
     const handleSelect = (event: {
       placementId: string | null;
@@ -345,6 +362,7 @@ export default function LabCanvas() {
       window.removeEventListener("keyup", onSprayKey);
       foam.dispose();
       pour.stop();
+      flaskPour.stop();
       onXRControllerAdded.remove(onGun);
       scene.onBeforeRenderObservable.remove(pollB);
       blaster.dispose();

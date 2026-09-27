@@ -19,6 +19,7 @@ test("liquid moves bottle -> flask -> filtrate and screens follow the steps", ()
     ...initialScenario,
     flaskFilled: true,
     calibrated: true,
+    cuvetteFilled: true,
     completed: ["tube_to_rack", "toggle_lever", "press_start"],
   });
   expect(done).toMatchObject({ cuvette: 1, filtrate: 1, filterStained: true });

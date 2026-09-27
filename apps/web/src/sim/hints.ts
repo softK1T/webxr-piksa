@@ -29,6 +29,8 @@ export function hintTarget(
       return held === "sample_bottle"
         ? item("erlenmeyer")
         : item("sample_bottle");
+    case "fill_cuvette":
+      return held === "erlenmeyer_flask" ? item("cuvette") : item("erlenmeyer");
     case "tube_to_rack":
       return held === "cuvette" ? zone("turbidimeter_socket") : item("cuvette");
     case "select_container":

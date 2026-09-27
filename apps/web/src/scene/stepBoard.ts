@@ -15,8 +15,8 @@ import { STEP_GUIDE, wrapText } from "../sim/stepGuide";
 
 const W = 1536;
 const H = 600;
-export const GUIDE_CHARS = 66;
-export const GUIDE_LINES = 4;
+export const GUIDE_CHARS = 74;
+export const GUIDE_LINES = 3;
 
 /** Chalkboard on the back wall (buildRoom.ts: 2.5 x 1 m at -0.6, 2.05, 3.92). */
 export const BOARD = {
@@ -80,8 +80,8 @@ export function createStepBoard(scene: Scene) {
     }
     const current = nextStep(state);
     STEPS.forEach((step, i) => {
-      const x = 32 + (i < 4 ? 0 : W / 2);
-      let y = 100 + (i % 4) * 124;
+      const x = 32 + (i < 5 ? 0 : W / 2);
+      let y = 92 + (i % 5) * 104;
       const done = state.completed.includes(step.id);
       const now = step.id === current;
       ctx.fillStyle = done ? "#8fa596" : now ? "#ffd166" : "#f1eee2";

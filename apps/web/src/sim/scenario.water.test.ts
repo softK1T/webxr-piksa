@@ -14,6 +14,7 @@ const WATER_RUN: ScenarioEvent[] = [
   { type: "placed", model: "safety_goggles", zone: "face" },
   { type: "grabbed", model: "sample_bottle" },
   { type: "poured", model: "sample_bottle", into: "erlenmeyer_flask" },
+  { type: "poured", model: "erlenmeyer_flask", into: "cuvette" },
   { type: "placed", model: "cuvette", zone: TURBIDIMETER_ZONE },
   { type: "selected", model: "buffer_bottle_ph7" },
   { type: "lever", on: true },

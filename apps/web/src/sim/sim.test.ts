@@ -19,6 +19,7 @@ const HAPPY: ScenarioEvent[] = [
   { type: "placed", model: "safety_goggles", zone: "face" },
   { type: "grabbed", model: "sample_bottle" },
   { type: "poured", model: "sample_bottle", into: "erlenmeyer_flask" },
+  { type: "poured", model: "erlenmeyer_flask", into: "cuvette" },
   { type: "placed", model: "cuvette", zone: "turbidimeter_socket" },
   { type: "selected", model: "buffer_bottle_ph7" },
   { type: "lever", on: true },
@@ -28,7 +29,7 @@ const HAPPY: ScenarioEvent[] = [
 test("full procedure succeeds", () => {
   const s = run(HAPPY);
   expect(s.status).toBe("success");
-  expect(s.completed).toHaveLength(8);
+  expect(s.completed).toHaveLength(9);
 });
 
 test("pressing start early fails with a hint", () => {
@@ -40,6 +41,7 @@ test("pressing start early fails with a hint", () => {
 test("out-of-order action gives a hint and is not counted", () => {
   const s = run([
     { type: "panel_opened" },
+    { type: "poured", model: "erlenmeyer_flask", into: "cuvette" },
     { type: "placed", model: "cuvette", zone: "turbidimeter_socket" },
   ]);
   expect(s.completed).toEqual(["open_panel"]);
@@ -139,7 +141,7 @@ test("drop zones do not overlap and flask does not start inside its target", () 
 
 test("wrist panel text follows the next step", async () => {
   const { taskText } = await import("./wristPanel");
-  expect(taskText(initialScenario).head).toBe("TASK 1 / 8");
+  expect(taskText(initialScenario).head).toBe("TASK 1 / 9");
   expect(taskText({ ...initialScenario, status: "success" }).body).toBe(
     "All tasks done",
   );

@@ -20,6 +20,7 @@ export const STEPS = [
   { id: "goggles_to_prep", title: "Put on your goggles" },
   { id: "find_flask", title: "Take the sample bottle" },
   { id: "flask_to_bench", title: "Pour the sample into the flask" },
+  { id: "fill_cuvette", title: "Fill the cuvette from the flask" },
   { id: "tube_to_rack", title: "Measure turbidity in the turbidimeter" },
   { id: "select_container", title: "Calibrate the pH meter at pH 7.00" },
   { id: "toggle_lever", title: "Filter the sample: start the vacuum pump" },
@@ -53,6 +54,8 @@ export interface ScenarioState {
   seed: number;
   sample: WaterSample;
   flaskFilled: boolean;
+  /** the cuvette got sample from the flask (needed for the turbidity reading) */
+  cuvetteFilled: boolean;
   calibrated: boolean;
 }
 
@@ -69,6 +72,7 @@ export const initialScenario: ScenarioState = {
   seed: DEFAULT_SEED,
   sample: newSample(seededRandom(DEFAULT_SEED)),
   flaskFilled: false,
+  cuvetteFilled: false,
   calibrated: false,
 };
 
@@ -93,12 +97,6 @@ const VERDICT_SHORT: Record<Verdict, string> = {
   not_drinkable: "water is NOT drinkable",
 };
 
-const isOtherFlask = (event: ScenarioEvent, state: ScenarioState) =>
-  "model" in event &&
-  event.model === "lab_flask" &&
-  event.id !== undefined &&
-  event.id !== state.sampleId;
-
 const title = (id: StepId) => STEPS.find((s) => s.id === id)?.title ?? id;
 
 export function nextStep(
@@ -108,6 +106,12 @@ export function nextStep(
 }
 
 function stepFor(event: ScenarioEvent): StepId | null {
+  if (
+    event.type === "poured" &&
+    event.model === "erlenmeyer_flask" &&
+    event.into === "cuvette"
+  )
+    return "fill_cuvette";
   switch (event.type) {
     case "panel_opened":
       return "open_panel";
@@ -178,16 +182,6 @@ export function reduceScenario(
       seed: state.seed,
       sample: state.sample,
     };
-  if (state.status !== "success" && isOtherFlask(event, state)) {
-    // picking flasks up to read their tags is fine; taking the wrong one to the device is not
-    if (event.type === "placed" && event.zone === "workbench_zone")
-      return {
-        ...state,
-        mistakes: state.mistakes + 1,
-        message: `Wrong sample. The order says No. ${state.sampleNo}.`,
-      };
-    return state;
-  }
   if (state.status === "success") return state;
   let s = state;
   if (event.type === "lever") {
@@ -224,6 +218,7 @@ export function reduceScenario(
     status: "running",
     flaskFilled: s.flaskFilled || step === "flask_to_bench",
     calibrated: s.calibrated || step === "select_container",
+    cuvetteFilled: s.cuvetteFilled || step === "fill_cuvette",
     message: upcoming ? `Next: ${title(upcoming)}.` : "",
   };
 }
