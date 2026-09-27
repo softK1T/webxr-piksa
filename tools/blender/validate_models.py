@@ -9,6 +9,8 @@ ROOT = Path(__file__).resolve().parents[2]
 MODELS = ROOT / "apps" / "web" / "public" / "models"
 REPORT = ROOT / "reports" / "model-validation.json"
 LIMITS = {
+    "vacuum_filtration": 5000, "vacuum_pump": 4000,
+    "parcel_box": 3000, "sample_bottle": 3000, "turbidimeter": 5000, "cuvette": 2000, "erlenmeyer_flask": 3000, "ph_meter": 7000, "buffer_bottle_ph4": 3000, "buffer_bottle_ph7": 3000, "buffer_bottle_ph10": 3000,
     "lab_flask": 2000, "test_tube": 2000, "safety_goggles": 2000, "protective_gloves": 2000,
     "warning_sign": 2000, "control_button": 4000, "control_lever": 4000, "test_tube_rack": 4000,
     "first_aid_kit": 4000, "colored_container_red": 4000, "colored_container_blue": 4000,
@@ -18,7 +20,7 @@ LIMITS = {
 MIN_TARGETS = {"measurement_device": 3000, "information_panel": 1000}
 DEFAULT_MIN_TARGET = 500
 LOD_RATIO = {"LOD1": (0.4, 0.6), "LOD2": (0.15, 0.3)}
-LOD_MODELS = {"fire_extinguisher", "measurement_device"}
+LOD_MODELS = {"vacuum_filtration", "vacuum_pump", "fire_extinguisher", "measurement_device", "parcel_box", "sample_bottle", "turbidimeter", "cuvette", "erlenmeyer_flask", "ph_meter", "buffer_bottle_ph4", "buffer_bottle_ph7", "buffer_bottle_ph10"}
 MAX_BYTES = 2_000_000
 
 

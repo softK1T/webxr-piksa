@@ -3,6 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from tools.blender.common import LODS, cube, cylinder, finalize, math, palette, reset_scene, sphere, torus  # noqa: E402,F401
+from tools.blender.extras import fit_lods  # noqa: E402
 
 NAME = "measurement_device"
 COLOR = (0.2, 0.8, 0.55)
@@ -29,6 +30,8 @@ def generate():
             build(level + "_", seg, mats)
     else:
         build("", 12, mats)
+    if LOD:
+        fit_lods()
     finalize(NAME, lod=LOD)
 
 
