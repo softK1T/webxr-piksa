@@ -1,13 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AuthForm from "./auth/AuthForm";
 import { authApi, UNAUTHORIZED_EVENT, type User } from "./auth/authApi";
 import LabCanvas from "./components/LabCanvas";
+import { EditorPanel } from "./editor/EditorPanel";
 
 type AuthState = { status: "loading" } | { status: "ready"; user: User | null };
 
 export default function App() {
   const [status, setStatus] = useState("Checking connection…");
   const [auth, setAuth] = useState<AuthState>({ status: "loading" });
+  const [showEditor, setShowEditor] = useState(false);
+  const getSceneRef = useRef<
+    (() => import("@babylonjs/core").Scene | null) | null
+  >(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -56,6 +61,9 @@ export default function App() {
         {user && (
           <div className="user-box">
             <span>{user.login}</span>
+            <button type="button" onClick={() => setShowEditor((v) => !v)}>
+              Scene editor
+            </button>
             <button type="button" onClick={handleLogout}>
               Log out
             </button>
@@ -65,7 +73,19 @@ export default function App() {
       {auth.status === "loading" && <p className="auth">Loading…</p>}
       {auth.status === "ready" &&
         (user ? (
-          <LabCanvas />
+          <>
+            <LabCanvas
+              onRegisterGetScene={(fn) => {
+                getSceneRef.current = fn;
+              }}
+            />
+            {showEditor && (
+              <EditorPanel
+                getScene={() => getSceneRef.current?.() ?? null}
+                onClose={() => setShowEditor(false)}
+              />
+            )}
+          </>
         ) : (
           <AuthForm onAuth={(u) => setAuth({ status: "ready", user: u })} />
         ))}
