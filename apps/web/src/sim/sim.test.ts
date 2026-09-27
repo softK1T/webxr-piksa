@@ -21,6 +21,7 @@ const HAPPY: ScenarioEvent[] = [
   { type: "poured", model: "sample_bottle", into: "erlenmeyer_flask" },
   { type: "poured", model: "erlenmeyer_flask", into: "cuvette" },
   { type: "placed", model: "cuvette", zone: "turbidimeter_socket" },
+  { type: "read", device: "turbidimeter" },
   { type: "selected", model: "buffer_bottle_ph7" },
   { type: "lever", on: true },
   { type: "button" },
@@ -43,6 +44,7 @@ test("out-of-order action gives a hint and is not counted", () => {
     { type: "panel_opened" },
     { type: "poured", model: "erlenmeyer_flask", into: "cuvette" },
     { type: "placed", model: "cuvette", zone: "turbidimeter_socket" },
+    { type: "read", device: "turbidimeter" },
   ]);
   expect(s.completed).toEqual(["open_panel"]);
   expect(s.message).toMatch(/^Not yet/);
@@ -69,7 +71,7 @@ test("switching the lever off removes the step", () => {
 
 test("zones accept only their items", () => {
   expect(findZone([-2.55, 1.2, 0.85], "safety_goggles")).toBeNull();
-  expect(findZone([2.5, 1.2, 0.84], "cuvette")?.id).toBe("turbidimeter_socket");
+  expect(findZone([2.5, 1.2, 1.15], "cuvette")?.id).toBe("turbidimeter_socket");
   expect(findZone([-2.55, 1.2, 0.85], "lab_flask")).toBeNull();
   expect(findZone([0, 1, 0], "safety_goggles")).toBeNull();
 });
@@ -102,10 +104,10 @@ function setup() {
 test("grab and release into a zone snaps the item", () => {
   const { anchor, mesh, hand, events, grab } = setup();
   expect(grab.grab(mesh, hand, "left")).toBe(true);
-  hand.position.set(2.5, 1.0, 0.84);
+  hand.position.set(2.5, 1.0, 1.15);
   expect(grab.release("left")).toBe("turbidimeter_socket");
   expect(anchor.position.x).toBeCloseTo(2.5);
-  expect(anchor.position.z).toBeCloseTo(0.84);
+  expect(anchor.position.z).toBeCloseTo(1.103);
   expect(events.map((e) => e.type)).toEqual(["grabbed", "placed"]);
 });
 

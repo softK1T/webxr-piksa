@@ -17,6 +17,7 @@ export const HINT_DELAY_MS = 40_000;
 export function hintTarget(
   step: StepId | null,
   held: string | null,
+  cuvetteInserted = false,
 ): HintTarget {
   switch (step) {
     case "open_panel":
@@ -32,7 +33,8 @@ export function hintTarget(
     case "fill_cuvette":
       return held === "erlenmeyer_flask" ? item("cuvette") : item("erlenmeyer");
     case "tube_to_rack":
-      return held === "cuvette" ? zone("turbidimeter_socket") : item("cuvette");
+      if (held === "cuvette") return zone("turbidimeter_socket");
+      return cuvetteInserted ? item("turbidimeter") : item("cuvette");
     case "select_container":
       return item("buffer_ph7");
     case "toggle_lever":

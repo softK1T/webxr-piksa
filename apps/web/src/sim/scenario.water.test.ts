@@ -16,6 +16,7 @@ const WATER_RUN: ScenarioEvent[] = [
   { type: "poured", model: "sample_bottle", into: "erlenmeyer_flask" },
   { type: "poured", model: "erlenmeyer_flask", into: "cuvette" },
   { type: "placed", model: "cuvette", zone: TURBIDIMETER_ZONE },
+  { type: "read", device: "turbidimeter" },
   { type: "selected", model: "buffer_bottle_ph7" },
   { type: "lever", on: true },
   { type: "button" },

@@ -64,6 +64,8 @@ test("drop pads lie on a table and are clear of other items", () => {
     expect(z.center[1]).toBeCloseTo(table!.y, 3);
     for (const p of LAB_LAYOUT) {
       if (p.on !== "table_a" && p.on !== "table_b") continue;
+      // a well pad sits inside its own device (turbidimeter_socket -> turbidimeter)
+      if (z.id.startsWith(`${p.id}_`)) continue;
       expect(overlap(pad, footprint(p)), `${z.id} vs ${p.id}`).toBe(false);
     }
   }

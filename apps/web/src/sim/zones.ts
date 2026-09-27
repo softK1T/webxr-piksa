@@ -15,9 +15,10 @@ export const DROP_ZONES: readonly DropZone[] = [
   {
     id: "turbidimeter_socket",
     label: "Turbidimeter well",
-    center: [2.5, T, 0.84],
-    half: [0.15, 0.5, 0.12],
-    snap: [2.5, T + 0.01, 0.84],
+    // the cell well under the lid at the back of the housing (turbidimeter.glb: Lid at z -0.097)
+    center: [2.5, T, 1.15],
+    half: [0.13, 0.5, 0.13],
+    snap: [2.5, T + 0.03, 1.103],
     accepts: ["cuvette"],
   },
 ];

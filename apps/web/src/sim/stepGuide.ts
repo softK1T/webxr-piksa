@@ -13,7 +13,7 @@ export const STEP_GUIDE: Record<StepId, string> = {
   fill_cuvette:
     "Pick up the lab flask and tilt it past 60 degrees over the cuvette on the Pouring bench (desktop: click the cuvette while holding the flask).",
   tube_to_rack:
-    "Put the filled cuvette on the Turbidimeter well pad (Analysis bench). The screen shows turbidity in NTU; drinking limit 1 NTU.",
+    "Insert the filled cuvette into the turbidimeter well (Analysis bench), then click the turbidimeter to press READ. The screen shows turbidity in NTU; limit 1 NTU.",
   select_container:
     "Pick BUFFER pH 7.00 on the Analysis bench to calibrate the pH meter. pH 4.01 and pH 10.01 are the wrong buffers for this run. Meter screen: CAL 7.00 OK.",
   toggle_lever:

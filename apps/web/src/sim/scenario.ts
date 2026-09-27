@@ -37,6 +37,7 @@ export type ScenarioEvent =
   | { type: "selected"; model: string; id?: string }
   | { type: "lever"; on: boolean }
   | { type: "button" }
+  | { type: "read"; device: "turbidimeter" }
   | { type: "reset" };
 
 export type ScenarioStatus = "idle" | "running" | "success" | "failed";
@@ -56,6 +57,8 @@ export interface ScenarioState {
   flaskFilled: boolean;
   /** the cuvette got sample from the flask (needed for the turbidity reading) */
   cuvetteFilled: boolean;
+  /** the cuvette sits in the turbidimeter well (READ measures it) */
+  cuvetteInserted: boolean;
   calibrated: boolean;
 }
 
@@ -73,6 +76,7 @@ export const initialScenario: ScenarioState = {
   sample: newSample(seededRandom(DEFAULT_SEED)),
   flaskFilled: false,
   cuvetteFilled: false,
+  cuvetteInserted: false,
   calibrated: false,
 };
 
@@ -106,6 +110,7 @@ export function nextStep(
 }
 
 function stepFor(event: ScenarioEvent): StepId | null {
+  if (event.type === "read") return "tube_to_rack";
   if (
     event.type === "poured" &&
     event.model === "erlenmeyer_flask" &&
@@ -118,8 +123,6 @@ function stepFor(event: ScenarioEvent): StepId | null {
     case "placed":
       if (event.model === "safety_goggles" && event.zone === "face")
         return "goggles_to_prep";
-      if (event.model === "cuvette" && event.zone === TURBIDIMETER_ZONE)
-        return "tube_to_rack";
       return null;
     case "poured":
       return event.model === "sample_bottle" &&
@@ -190,6 +193,23 @@ export function reduceScenario(
       s = { ...s, completed: s.completed.filter((c) => c !== "toggle_lever") };
   }
   if (event.type === "button") return validate(s);
+  if (event.type === "grabbed" && event.model === "cuvette")
+    s = { ...s, cuvetteInserted: false };
+  if (
+    event.type === "placed" &&
+    event.model === "cuvette" &&
+    event.zone === TURBIDIMETER_ZONE
+  )
+    return {
+      ...s,
+      cuvetteInserted: true,
+      message: "Cuvette in the well. Press READ on the turbidimeter.",
+    };
+  if (event.type === "read" && !s.cuvetteInserted)
+    return {
+      ...s,
+      message: "E1 NO SAMPLE: insert the filled cuvette into the well first.",
+    };
   const wrong = wrongChoice(event);
   if (wrong) {
     return {

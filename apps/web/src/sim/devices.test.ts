@@ -18,6 +18,10 @@ test("equipment clicks map to scenario events", () => {
     into: "cuvette",
   });
   expect(clickEvent("cuvette", null, false)).toBeNull();
+  expect(clickEvent("turbidimeter", null, false)).toEqual({
+    type: "read",
+    device: "turbidimeter",
+  });
   expect(clickEvent("goggles", null, false)).toBeNull();
 });
 

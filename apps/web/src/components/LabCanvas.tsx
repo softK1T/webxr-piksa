@@ -300,7 +300,7 @@ export default function LabCanvas() {
       }
       const stuck = performance.now() - hintSince > HINT_DELAY_MS;
       return step === "open_panel" || stuck
-        ? hintTarget(step, grab.heldModel)
+        ? hintTarget(step, grab.heldModel, state.cuvetteInserted)
         : null;
     });
     const events: XREvents = {

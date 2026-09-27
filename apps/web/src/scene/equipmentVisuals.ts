@@ -44,7 +44,9 @@ export function equipmentView(state: ScenarioState): EquipmentView {
     filterStained: filtered,
     turbidimeter: done("tube_to_rack")
       ? turbidimeterScreen(state.sample, state.cuvetteFilled)
-      : "READY",
+      : state.cuvetteInserted
+        ? "PRESS READ"
+        : "READY",
     phMeter: done("press_start")
       ? phMeterScreen(readPhMeter(state.sample, state.calibrated))
       : state.calibrated

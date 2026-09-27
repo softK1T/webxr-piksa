@@ -19,6 +19,8 @@ export function clickEvent(
       return held === "sample_bottle"
         ? { type: "poured", model: "sample_bottle", into: "erlenmeyer_flask" }
         : null;
+    case "turbidimeter":
+      return { type: "read", device: "turbidimeter" };
     case "cuvette":
       // desktop fallback: click the cuvette while holding the flask = fill it
       return held === "erlenmeyer_flask"
