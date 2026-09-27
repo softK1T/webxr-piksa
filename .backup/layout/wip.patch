@@ -1,0 +1,262 @@
+diff --git a/apps/web/src/scene/labLayout.ts b/apps/web/src/scene/labLayout.ts
+index dd53603..b1bd60f 100644
+--- a/apps/web/src/scene/labLayout.ts
++++ b/apps/web/src/scene/labLayout.ts
+@@ -13,42 +13,48 @@ export interface ModelPlacement {
+ }
+ 
+ export const MODEL_NAMES = [
+-  "lab_flask",
+-  "test_tube",
+-  "test_tube_rack",
+   "safety_goggles",
+   "protective_gloves",
+   "fire_extinguisher",
+   "first_aid_kit",
+-  "measurement_device",
+   "control_button",
+   "control_lever",
+-  "colored_container_red",
+-  "colored_container_blue",
+-  "colored_container_green",
+   "warning_sign",
+   "information_panel",
+   "parcel_box",
++  "sample_bottle",
++  "erlenmeyer_flask",
++  "cuvette",
++  "turbidimeter",
++  "buffer_bottle_ph4",
++  "buffer_bottle_ph7",
++  "buffer_bottle_ph10",
++  "ph_meter",
++  "vacuum_filtration",
++  "vacuum_pump",
+ ] as const;
+ 
+ /** Model bounding sizes [w, h, d] in metres, from reports/model-validation.json. */
+-export const MODEL_SIZE: Record<string, Vec3> = {
+-  lab_flask: [0.2, 0.34, 0.2],
+-  test_tube: [0.044, 0.184, 0.044],
+-  test_tube_rack: [0.32, 0.113, 0.1],
++export const \1
+   safety_goggles: [0.188, 0.086, 0.188],
+   protective_gloves: [0.281, 0.026, 0.205],
+   fire_extinguisher: [0.228, 0.543, 0.164],
+   first_aid_kit: [0.324, 0.212, 0.128],
+-  measurement_device: [0.394, 0.254, 0.22],
+   control_button: [0.16, 0.092, 0.16],
+   control_lever: [0.18, 0.32, 0.12],
+-  colored_container_red: [0.28, 0.27, 0.2],
+-  colored_container_blue: [0.28, 0.27, 0.2],
+-  colored_container_green: [0.28, 0.27, 0.2],
+   warning_sign: [0.34, 0.89, 0.24],
+   information_panel: [0.8, 0.65, 0.16],
+   parcel_box: [0.41, 0.32, 0.32],
++  sample_bottle: [0.1,  0.27,  0.1],
++  erlenmeyer_flask: [0.14,  0.24,  0.14],
++  cuvette: [0.03,  0.11,  0.03],
++  turbidimeter: [0.24,  0.11,  0.11],
++  buffer_bottle_ph4: [0.075,  0.15,  0.075],
++  buffer_bottle_ph7: [0.075,  0.15,  0.075],
++  buffer_bottle_ph10: [0.075,  0.15,  0.075],
++  ph_meter: [0.36,  0.4,  0.22],
++  vacuum_filtration: [0.32,  0.46,  0.2],
++  vacuum_pump: [0.28,  0.21,  0.2],
+ };
+ 
+ /** Furniture from buildRoom.ts: horizontal surfaces {x0,x1,z0,z1,y}. */
+@@ -68,65 +74,18 @@ const C = CONSOLE_HEIGHT;
+ const SIDE = Math.PI / 2;
+ 
+ export const LAB_LAYOUT: readonly (ModelPlacement & { on: SurfaceId })[] = [
+-  // five identical samples on the sample bench; only the label tells them apart
+-  { id: "flask", model: "lab_flask", position: [-2.7, T, 1.25], on: "table_a" },
+-  {
+-    id: "flask_2",
+-    model: "lab_flask",
+-    position: [-2.35, T, 1.25],
+-    on: "table_a",
+-  },
+-  {
+-    id: "flask_3",
+-    model: "lab_flask",
+-    position: [-2.0, T, 1.25],
+-    on: "table_a",
+-  },
+-  {
+-    id: "flask_4",
+-    model: "lab_flask",
+-    position: [-1.65, T, 1.25],
+-    on: "table_a",
+-  },
+-  {
+-    id: "flask_5",
+-    model: "lab_flask",
+-    position: [-1.3, T, 1.25],
+-    on: "table_a",
+-  },
+-  // Table A: sample bench (goggles pad at left front, flask middle, rack right back)
+-  {
+-    id: "rack",
+-    model: "test_tube_rack",
+-    position: [3.2, T, 0.85],
+-    on: "table_b",
+-  },
+-  { id: "tube", model: "test_tube", position: [2.87, T, 0.72], on: "table_b" },
+-  // Table B: analysis bench (containers in back row, device right, flask pad in front of device)
+-  {
+-    id: "container_red",
+-    model: "colored_container_red",
+-    position: [2.5, T, 1.2],
+-    on: "table_b",
+-  },
+-  {
+-    id: "container_blue",
+-    model: "colored_container_blue",
+-    position: [2.85, T, 1.2],
+-    on: "table_b",
+-  },
+-  {
+-    id: "container_green",
+-    model: "colored_container_green",
+-    position: [3.2, T, 1.2],
+-    on: "table_b",
+-  },
+-  {
+-    id: "device",
+-    model: "measurement_device",
+-    position: [3.73, T, 1.2],
+-    on: "table_b",
+-  },
++  // Table A: pouring bench (goggles pad front-left, lab flask receives the sample, cuvette is filled from it)
++  { id: "erlenmeyer", model: "erlenmeyer_flask", position: [-2.0, T, 1.15], on: "table_a" },
++  { id: "cuvette", model: "cuvette", position: [-1.55, T, 0.95], on: "table_a" },
++  // Table B: analysis bench. Back row: turbidimeter, pH meter, filtration + pump (pump = filtration + 0.36 x,
++  // so the hose meets the port). Front row: turbidimeter well pad, calibration buffers.
++  { id: "turbidimeter", model: "turbidimeter", position: [2.5, T, 1.2], on: "table_b" },
++  { id: "ph_meter", model: "ph_meter", position: [3.0, T, 1.2], on: "table_b" },
++  { id: "filtration", model: "vacuum_filtration", position: [3.45, T, 1.15], on: "table_b" },
++  { id: "pump", model: "vacuum_pump", position: [3.81, T, 1.15], on: "table_b" },
++  { id: "buffer_ph4", model: "buffer_bottle_ph4", position: [2.85, T, 0.8], on: "table_b" },
++  { id: "buffer_ph7", model: "buffer_bottle_ph7", position: [3.0, T, 0.8], on: "table_b" },
++  { id: "buffer_ph10", model: "buffer_bottle_ph10", position: [3.15, T, 0.8], on: "table_b" },
+   // Shelf: safety station
+   {
+     id: "goggles",
+@@ -179,6 +138,8 @@ export const LAB_LAYOUT: readonly (ModelPlacement & { on: SurfaceId })[] = [
+     on: "floor",
+   },
+   // Control console
++  // the sample bottle lies inside the parcel until the lid is opened
++  { id: "sample_bottle", model: "sample_bottle", position: [-2.75, 0, -3.55], on: "floor" },
+   {
+     id: "button",
+     model: "control_button",
+@@ -239,13 +200,13 @@ export const LAB_ZONES: readonly LabZone[] = [
+   },
+   {
+     id: "chemistry",
+-    title: "2. Sample bench",
++    title: "2. Pouring bench",
+     color: [0.25, 0.8, 0.4],
+     center: [-2, 1],
+     size: [2.0, 1.0],
+     labelPosition: [-2, 1.95, 1.45],
+     labelRotationY: 0,
+-    items: ["flask", "flask_2", "flask_3", "flask_4", "flask_5"],
++    items: ["erlenmeyer", "cuvette"],
+   },
+   {
+     id: "analysis",
+@@ -256,12 +217,13 @@ export const LAB_ZONES: readonly LabZone[] = [
+     labelPosition: [3.15, 1.95, 1.45],
+     labelRotationY: 0,
+     items: [
+-      "device",
+-      "container_red",
+-      "container_blue",
+-      "container_green",
+-      "rack",
+-      "tube",
++      "turbidimeter",
++      "ph_meter",
++      "filtration",
++      "pump",
++      "buffer_ph4",
++      "buffer_ph7",
++      "buffer_ph10",
+     ],
+   },
+   {
+@@ -292,7 +254,7 @@ export const LAB_ZONES: readonly LabZone[] = [
+     size: [1.0, 0.7],
+     labelPosition: [-2.75, 1.3, -3.93],
+     labelRotationY: Math.PI,
+-    items: ["parcel"],
++    items: ["parcel", "sample_bottle"],
+   },
+   {
+     id: "info",
+@@ -306,18 +268,18 @@ export const LAB_ZONES: readonly LabZone[] = [
+   },
+ ];
+ 
+-/** Item labels. Items without an entry (rack, info panel) are labelled by their drop zone or screen. */
+-export const ITEM_LABELS: Record<string, string> = {
+-  flask: "Sample No. 7",
+-  flask_2: "Sample No. 3",
+-  flask_3: "Sample No. 5",
+-  flask_4: "Sample No. 8",
+-  flask_5: "Sample No. 9",
+-  tube: "Test tube",
+-  device: "Measurement device",
+-  container_red: "ACID  pH 1",
+-  container_blue: "NEUTRAL BUFFER  pH 7",
+-  container_green: "ALKALINE  pH 12",
++/** Item labels. Items without an entry (info panel) are labelled by their drop zone or screen. */
++\1
++  erlenmeyer: "Lab flask 1 L",
++  cuvette: "Cuvette",
++  turbidimeter: "Turbidimeter",
++  ph_meter: "pH / conductivity meter",
++  filtration: "Vacuum filtration",
++  pump: "Vacuum pump",
++  buffer_ph4: "BUFFER pH 4.01",
++  buffer_ph7: "BUFFER pH 7.00",
++  buffer_ph10: "BUFFER pH 10.01",
++  sample_bottle: "Well water sample",
+   goggles: "Goggles",
+   gloves: "Gloves",
+   first_aid: "First aid kit",
+diff --git a/apps/web/src/sim/zones.ts b/apps/web/src/sim/zones.ts
+index e772bb9..d347c06 100644
+--- a/apps/web/src/sim/zones.ts
++++ b/apps/web/src/sim/zones.ts
+@@ -21,20 +21,12 @@ export const DROP_ZONES: readonly DropZone[] = [
+     accepts: ["safety_goggles"],
+   },
+   {
+-    id: "workbench_zone",
+-    label: "Analyzer inlet",
+-    center: [3.73, T, 0.84],
+-    half: [0.18, 0.5, 0.14],
+-    snap: [3.73, T + 0.01, 0.84],
+-    accepts: ["lab_flask"],
+-  },
+-  {
+-    id: "rack_zone",
+-    label: "Tube holder",
+-    center: [3.2, T, 0.85],
+-    half: [0.2, 0.5, 0.12],
+-    snap: [3.2, T + 0.02, 0.85],
+-    accepts: ["test_tube"],
++    id: "turbidimeter_socket",
++    label: "Turbidimeter well",
++    center: [2.5, T, 0.84],
++    half: [0.15, 0.5, 0.12],
++    snap: [2.5, T + 0.01, 0.84],
++    accepts: ["cuvette"],
+   },
+ ];
+ 
