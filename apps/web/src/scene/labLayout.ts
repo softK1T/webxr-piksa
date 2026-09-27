@@ -28,6 +28,7 @@ export const MODEL_NAMES = [
   "colored_container_green",
   "warning_sign",
   "information_panel",
+  "parcel_box",
 ] as const;
 
 /** Model bounding sizes [w, h, d] in metres, from reports/model-validation.json. */
@@ -47,6 +48,7 @@ export const MODEL_SIZE: Record<string, Vec3> = {
   colored_container_green: [0.28, 0.27, 0.2],
   warning_sign: [0.34, 0.89, 0.24],
   information_panel: [0.8, 0.65, 0.16],
+  parcel_box: [0.41, 0.32, 0.32],
 };
 
 /** Furniture from buildRoom.ts: horizontal surfaces {x0,x1,z0,z1,y}. */
@@ -169,6 +171,13 @@ export const LAB_LAYOUT: readonly (ModelPlacement & { on: SurfaceId })[] = [
     scale: 2,
     on: "floor",
   },
+  // Delivery: parcel with the water sample, on the floor next to the door (door x -4..-3, z -3.97)
+  {
+    id: "parcel",
+    model: "parcel_box",
+    position: [-2.75, 0, -3.55],
+    on: "floor",
+  },
   // Control console
   {
     id: "button",
@@ -276,6 +285,16 @@ export const LAB_ZONES: readonly LabZone[] = [
     items: ["extinguisher"],
   },
   {
+    id: "delivery",
+    title: "Delivery",
+    color: [0.85, 0.6, 0.3],
+    center: [-2.75, -3.5],
+    size: [1.0, 0.7],
+    labelPosition: [-2.75, 1.3, -3.93],
+    labelRotationY: Math.PI,
+    items: ["parcel"],
+  },
+  {
     id: "info",
     title: "Instructions",
     color: [0.6, 0.4, 0.95],
@@ -303,6 +322,7 @@ export const ITEM_LABELS: Record<string, string> = {
   gloves: "Gloves",
   first_aid: "First aid kit",
   extinguisher: "Fire extinguisher",
+  parcel: "Parcel: water sample",
   button: "Start",
   lever: "Lever",
 };
