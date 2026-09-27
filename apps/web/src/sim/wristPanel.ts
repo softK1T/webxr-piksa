@@ -48,6 +48,9 @@ export function createWristPanel(scene: Scene) {
   plane.alwaysSelectAsActiveMesh = true;
   plane.renderingGroupId = 1;
   plane.setEnabled(false);
+  // hidden once all tasks are done (and while not attached to a controller)
+  let attached = false;
+  let done = false;
   const texture = new DynamicTexture(
     "wrist_task_tex",
     { width: W, height: H },
@@ -62,6 +65,8 @@ export function createWristPanel(scene: Scene) {
   plane.material = mat;
 
   const draw = (state: ScenarioState) => {
+    done = state.status === "success";
+    plane.setEnabled(attached && !done);
     const ctx =
       texture.getContext() as unknown as CanvasRenderingContext2D | null;
     if (!ctx) return;
@@ -89,10 +94,12 @@ export function createWristPanel(scene: Scene) {
     plane.position.set(0, 0.07, 0.03);
     plane.rotation.set(Math.PI / 4, 0, 0);
     plane.unfreezeWorldMatrix();
-    plane.setEnabled(true);
+    attached = true;
+    plane.setEnabled(!done);
   };
   const detach = () => {
     plane.parent = null;
+    attached = false;
     plane.setEnabled(false);
   };
 
