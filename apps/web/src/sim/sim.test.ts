@@ -106,14 +106,19 @@ test("grab and release into a zone snaps the item", () => {
   expect(events.map((e) => e.type)).toEqual(["grabbed", "placed"]);
 });
 
-test("release outside a zone returns the item home", () => {
+test("release outside a zone drops the item where it was let go", () => {
   const { anchor, mesh, hand, grab } = setup();
   grab.grab(mesh, hand, "right");
   hand.position.set(3, 1.5, -2);
   expect(grab.release("left")).toBeNull();
   expect(grab.release("right")).toBeNull();
-  expect(anchor.position.x).toBeCloseTo(-1.4);
   expect(grab.holding).toBe(false);
+  expect(grab.falling).toBe(1);
+  grab.settle();
+  expect(grab.falling).toBe(0);
+  expect(anchor.position.x).toBeCloseTo(3);
+  expect(anchor.position.z).toBeCloseTo(-2);
+  expect(anchor.position.y).toBeCloseTo(0);
 });
 
 test("drop zones do not overlap and flask does not start inside its target", () => {
