@@ -315,19 +315,10 @@ export function buildRoom(scene: Scene): Mesh[] {
       false,
     ),
   );
-  // safe, fire board, coat rack, radiator, pipes
+  // safe, fire board, radiator, pipes (coat rack removed: the parcel stands there)
   add(
     box(scene, "safe", [0.8, 1, 0.65], [-4.5, 0.5, -2.65], metal),
     box(scene, "fire_board", [0.05, 1.1, 1], [-4.92, 1.45, -3.25], red, false),
-    box(scene, "coat_rack", [0.1, 1.9, 0.1], [-2.65, 0.95, -3.55], dark),
-    box(
-      scene,
-      "lab_coat",
-      [0.65, 1.05, 0.08],
-      [-2.65, 1.25, -3.44],
-      white,
-      false,
-    ),
     box(scene, "radiator", [0.18, 0.65, 1.3], [4.85, 0.345, -0.65], white),
     box(scene, "ceiling_pipe", [0.12, 0.12, 8], [-4.55, 2.75, 0], ivory, false),
   );
