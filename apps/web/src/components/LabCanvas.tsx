@@ -12,6 +12,8 @@ import {
 import { mountInfoPanel } from "../scene/labDressing";
 import { loadLabModels, type LoadProgress } from "../scene/loadLabModels";
 import { GrabSystem } from "../sim/grab";
+import { createPourWatcher, flaskMouthOf } from "../sim/pour";
+import { clickEvent, openParcelLid } from "../sim/devices";
 import { createHintMarker } from "../sim/hintMarker";
 import { HINT_DELAY_MS, hintTarget } from "../sim/hints";
 import { createInfoPanel } from "../sim/infoPanel";
@@ -190,7 +192,33 @@ export default function LabCanvas() {
       wrist.draw(state);
       if (!disposed) setScenario(state);
     };
-    const grab = new GrabSystem(scene, dispatch);
+    const pour = createPourWatcher(
+      scene,
+      () => (grab.heldModel === "sample_bottle" ? grab.heldAnchor : null),
+      () => flaskMouthOf(scene),
+      () =>
+        dispatch({
+          type: "poured",
+          model: "sample_bottle",
+          into: "erlenmeyer_flask",
+        }),
+    );
+    const grab = new GrabSystem(scene, (event) => {
+      dispatch(event);
+      if (!("model" in event) || event.model !== "sample_bottle") return;
+      if (event.type === "grabbed") pour.start();
+      else if (event.type === "placed") pour.stop();
+    });
+    const handleSelect = (event: {
+      placementId: string | null;
+      action: string;
+    }) => {
+      if (event.action === "squeeze") return;
+      const e = clickEvent(event.placementId, grab.heldModel, state.leverOn);
+      if (!e) return;
+      if (e.type === "panel_opened") openParcelLid(scene);
+      dispatch(e);
+    };
     const foam = createFoamSprayer(scene);
     const xrSources = new Map<string, WebXRInputSource>();
     const holdsExtinguisher = () => grab.heldModel === "fire_extinguisher";
@@ -262,6 +290,7 @@ export default function LabCanvas() {
       },
       onSelect: (event) => {
         if (!disposed) setSelected(event);
+        if (!disposed) handleSelect(event);
       },
       onAction: (action) => interaction.controller(action),
     };
@@ -313,6 +342,7 @@ export default function LabCanvas() {
       window.removeEventListener("keydown", onSprayKey);
       window.removeEventListener("keyup", onSprayKey);
       foam.dispose();
+      pour.stop();
       onXRControllerAdded.remove(onGun);
       scene.onBeforeRenderObservable.remove(pollB);
       blaster.dispose();
