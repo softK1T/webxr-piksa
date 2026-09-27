@@ -23,6 +23,10 @@ test("liquid moves bottle -> flask -> filtrate and screens follow the steps", ()
   });
   expect(done).toMatchObject({ cuvette: 1, filtrate: 1, filterStained: true });
   expect(done.flask).toBeLessThan(1);
-  expect(done.turbidimeter).not.toBe("READY");
+  expect(done.turbidimeter).toMatch(/NTU$/);
+  expect(
+    equipmentView({ ...initialScenario, completed: ["tube_to_rack"] })
+      .turbidimeter,
+  ).toBe("E1 NO SAMPLE");
   expect(done.phMeter).not.toMatch(/^CAL/);
 });
