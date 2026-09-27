@@ -3,6 +3,8 @@ import AuthForm from "./auth/AuthForm";
 import { authApi, UNAUTHORIZED_EVENT, type User } from "./auth/authApi";
 import LabCanvas from "./components/LabCanvas";
 import { EditorPanel } from "./editor/EditorPanel";
+import LeaderboardWidget from "./leaderboard/LeaderboardWidget";
+import { submitResult } from "./leaderboard/leaderboardApi";
 
 type AuthState = { status: "loading" } | { status: "ready"; user: User | null };
 
@@ -10,6 +12,7 @@ export default function App() {
   const [status, setStatus] = useState("Checking connection…");
   const [auth, setAuth] = useState<AuthState>({ status: "loading" });
   const [showEditor, setShowEditor] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const getSceneRef = useRef<
     (() => import("@babylonjs/core").Scene | null) | null
   >(null);
@@ -52,6 +55,16 @@ export default function App() {
 
   const user = auth.status === "ready" ? auth.user : null;
 
+  const handleFinished = (timeSec: number, mistakes: number) => {
+    if (!user) return;
+    void submitResult({
+      user_id: user.id,
+      login: user.login,
+      time_sec: timeSec,
+      mistakes,
+    });
+  };
+
   return (
     <main>
       <header className="topbar">
@@ -61,6 +74,9 @@ export default function App() {
         {user && (
           <div className="user-box">
             <span>{user.login}</span>
+            <button type="button" onClick={() => setShowLeaderboard((v) => !v)}>
+              🏆 Leaderboard
+            </button>
             <button type="button" onClick={() => setShowEditor((v) => !v)}>
               Scene editor
             </button>
@@ -78,12 +94,16 @@ export default function App() {
               onRegisterGetScene={(fn) => {
                 getSceneRef.current = fn;
               }}
+              onFinished={handleFinished}
             />
             {showEditor && (
               <EditorPanel
                 getScene={() => getSceneRef.current?.() ?? null}
                 onClose={() => setShowEditor(false)}
               />
+            )}
+            {showLeaderboard && (
+              <LeaderboardWidget onClose={() => setShowLeaderboard(false)} />
             )}
           </>
         ) : (

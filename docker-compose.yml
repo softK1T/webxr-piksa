@@ -12,6 +12,7 @@ services:
       retries: 10
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
   api:
     build: ./apps/api
     environment:
@@ -22,13 +23,28 @@ services:
         condition: service_healthy
     ports:
       - "${API_PORT:-8000}:8000"
+
+  leaderboard:
+    build: ./apps/leaderboard
+    environment:
+      DATABASE_URL: ${LB_DATABASE_URL:-jdbc:postgresql://db:5432/piksa?user=piksa&password=change-me}
+      LB_PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${LB_PORT:-3001}:3000"
+
   web:
     build: ./apps/web
     environment:
       API_PROXY_TARGET: http://api:8000
+      LB_PROXY_TARGET: http://leaderboard:3000
     depends_on:
       - api
+      - leaderboard
     ports:
       - "${WEB_PORT:-5173}:5173"
+
 volumes:
   postgres_data:
