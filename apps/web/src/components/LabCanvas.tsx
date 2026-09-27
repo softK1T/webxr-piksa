@@ -125,6 +125,8 @@ export default function LabCanvas() {
     }
     const scene = createLabScene(engine, canvas);
     applyQuality(scene, settingsRef.current.quality);
+    scene.imageProcessingConfiguration.exposure =
+      settingsRef.current.brightness;
     const lod = new LodManager(scene);
     runtimeRef.current = {
       engine,
@@ -390,6 +392,8 @@ export default function LabCanvas() {
     if (runtime) {
       const activeScene = runtime.engine.scenes[0];
       if (activeScene) applyQuality(activeScene, settings.quality);
+      if (activeScene)
+        activeScene.imageProcessingConfiguration.exposure = settings.brightness;
       runtime.engine.setHardwareScalingLevel(
         hardwareScaling(settings.quality, window.devicePixelRatio),
       );

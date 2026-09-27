@@ -75,6 +75,8 @@ Controls: WASD/arrow keys to move, hold the left mouse button to look around, cl
 
 ## WebXR
 
+- Gestures: optional WebXR hand tracking. Pinch = select/grab, pinch-and-hold on the floor = teleport. Controllers keep working when hands are not supported.
+
 - `src/xr/xrSupport.ts`: checks secure context, `navigator.xr` and `immersive-vr` support.
 - `src/xr/setupXR.ts`: XR session (`local-floor`), two controllers with pointer rays, trigger/squeeze selection, teleportation restricted to the floor with snap turning, free locomotion (left stick) with smooth turning (right stick), and mode switching.
 - `src/xr/selection.ts`: outline highlight of the selected object (mouse click on desktop, trigger/squeeze in VR).
@@ -111,6 +113,8 @@ Desktop: click to interact; click a grabbable item (goggles, flask, test tube) t
 
 ## User interface
 
+- Settings: movement mode and speed, turn type, graphics quality and **brightness** (scene exposure 50-150%), saved in localStorage.
+
 - Main menu: start on desktop or in VR, instructions, settings. VR support status is shown in the menu.
 - Settings (`src/ui/settings.ts`, stored in `localStorage`): movement speed, VR locomotion (teleport/free), VR turning (snap/smooth), graphics quality (low/medium/high, mapped to render resolution).
 - In-scene hints: a yellow marker (`src/sim/hintMarker.ts`) floats above the next target (item or drop zone); the information panel lists steps and hints and is readable in VR.
@@ -136,6 +140,8 @@ API (`apps/api/app/api.py`): `GET/POST /scenes`, `POST /scenes/import`, `GET/PUT
 - External login research: `docs/oauth-research.md`.
 
 ## Optimization and quality profiles
+
+- Latency: the API compresses responses (GZip) and marks model files cacheable (`Cache-Control: private, max-age=86400`); sessions are stateless signed cookies, so several API instances can run behind a load balancer. See `docs/distributed-processing.md`.
 
 | Profile | LOD switch (m) | Dynamic lights | Shadows          | Resolution         |
 | ------- | -------------- | -------------- | ---------------- | ------------------ |

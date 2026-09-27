@@ -4,6 +4,8 @@ import {
   type Quality,
   type Settings,
   type TurnType,
+  BRIGHTNESS_MIN,
+  BRIGHTNESS_MAX,
 } from "./settings";
 import type { LocomotionMode } from "../xr/setupXR";
 
@@ -17,6 +19,18 @@ export function SettingsForm({ settings, onChange }: Props) {
     onChange({ ...settings, [key]: value });
   return (
     <form className="settings" onSubmit={(e) => e.preventDefault()}>
+      <label>
+        Brightness: {Math.round(settings.brightness * 100)}%
+        <input
+          type="range"
+          min={BRIGHTNESS_MIN}
+          max={BRIGHTNESS_MAX}
+          step={0.05}
+          value={settings.brightness}
+          aria-label="Brightness"
+          onChange={(e) => set("brightness", Number(e.target.value))}
+        />
+      </label>
       <label>
         Movement speed: {settings.moveSpeed.toFixed(1)}x
         <input

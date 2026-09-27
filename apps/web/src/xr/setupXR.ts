@@ -111,6 +111,19 @@ export async function setupXR(
     optionalFeatures: true,
   });
   const features = xr.baseExperience.featuresManager;
+  // Gestures: WebXR hand tracking (optional, the session still starts without it).
+  // Pinch = select (grab / press); pinch-and-hold on the floor = teleport (hands have no thumbstick).
+  try {
+    features.enableFeature(
+      WebXRFeatureName.HAND_TRACKING,
+      "latest",
+      { xrInput: xr.input },
+      true,
+      false,
+    );
+  } catch {
+    /* hand tracking not available on this device/browser */
+  }
 
   const enableMovement = (move: boolean) =>
     features.enableFeature(

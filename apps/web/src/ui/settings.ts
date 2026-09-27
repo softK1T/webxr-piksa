@@ -8,17 +8,22 @@ export interface Settings {
   moveSpeed: number;
   turn: TurnType;
   quality: Quality;
+  /** scene exposure multiplier */
+  brightness: number;
 }
 
 export const SETTINGS_KEY = "piksa.settings";
 export const SPEED_MIN = 0.5;
 export const SPEED_MAX = 2;
+export const BRIGHTNESS_MIN = 0.5;
+export const BRIGHTNESS_MAX = 1.5;
 
 export const DEFAULT_SETTINGS: Settings = {
   locomotion: "teleport",
   moveSpeed: 1,
   turn: "snap",
   quality: "medium",
+  brightness: 1,
 };
 
 const pick = <T extends string>(
@@ -36,6 +41,10 @@ export function sanitizeSettings(raw: unknown): Settings {
     typeof r.moveSpeed === "number" && Number.isFinite(r.moveSpeed)
       ? r.moveSpeed
       : DEFAULT_SETTINGS.moveSpeed;
+  const brightness =
+    typeof r.brightness === "number" && Number.isFinite(r.brightness)
+      ? r.brightness
+      : DEFAULT_SETTINGS.brightness;
   return {
     locomotion: pick(
       r.locomotion,
@@ -49,6 +58,7 @@ export function sanitizeSettings(raw: unknown): Settings {
       ["low", "medium", "high"] as const,
       DEFAULT_SETTINGS.quality,
     ),
+    brightness: Math.min(BRIGHTNESS_MAX, Math.max(BRIGHTNESS_MIN, brightness)),
   };
 }
 
