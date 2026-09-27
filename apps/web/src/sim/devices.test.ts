@@ -1,3 +1,5 @@
+import { isDipped } from "./pour";
+import { LAB_LAYOUT } from "../scene/labLayout";
 import { NullEngine, Scene, TransformNode } from "@babylonjs/core";
 import { expect, test } from "vitest";
 import { clickEvent, openParcelLid } from "./devices";
@@ -66,4 +68,19 @@ test("parcel lid opens, other lids stay", () => {
   expect(openParcelLid(scene)).toBe(1);
   expect(lid.rotation.x).toBeLessThan(-1);
   expect(other.rotation.x).toBe(0);
+});
+
+test("desktop: clicking a buffer while holding the electrode dips it", () => {
+  const ph7 = LAB_LAYOUT.find((p) => p.model === "buffer_bottle_ph7")!;
+  expect(clickEvent(ph7.id, "ph_electrode", false)).toEqual({
+    type: "dipped",
+    into: "buffer_bottle_ph7",
+  });
+  expect(clickEvent(ph7.id, null, false)).toBeNull();
+});
+
+test("electrode tip dips only inside the mouth and below the top", () => {
+  expect(isDipped([0, 0.9, 0], [0, 0.95, 0])).toBe(true);
+  expect(isDipped([0.1, 0.9, 0], [0, 0.95, 0])).toBe(false);
+  expect(isDipped([0, 1.0, 0], [0, 0.95, 0])).toBe(false);
 });

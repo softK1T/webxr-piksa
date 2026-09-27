@@ -1,3 +1,4 @@
+import { detachElectrode, ELECTRODE_ID } from "../scene/electrode";
 import { Ray, Vector3, type WebXRInputSource } from "@babylonjs/core";
 import { Engine, PointerEventTypes, UniversalCamera } from "@babylonjs/core";
 import { useEffect, useRef, useState } from "react";
@@ -11,7 +12,13 @@ import {
 } from "../scene/quality";
 import { loadLabModels, type LoadProgress } from "../scene/loadLabModels";
 import { GrabSystem } from "../sim/grab";
-import { createPourWatcher, cuvetteMouthOf, flaskMouthOf } from "../sim/pour";
+import {
+  createDipWatcher,
+  topOf,
+  createPourWatcher,
+  cuvetteMouthOf,
+  flaskMouthOf,
+} from "../sim/pour";
 import { clickEvent, openParcelLid } from "../sim/devices";
 import { createHintMarker } from "../sim/hintMarker";
 import { HINT_DELAY_MS, hintTarget } from "../sim/hints";
@@ -216,6 +223,18 @@ export default function LabCanvas() {
           into: "cuvette",
         }),
     );
+    const dip = createDipWatcher(
+      scene,
+      () => (grab.heldModel === ELECTRODE_ID ? grab.heldAnchor : null),
+      () =>
+        LAB_LAYOUT.filter((p) => p.model.startsWith("buffer_bottle_")).flatMap(
+          (p) => {
+            const top = topOf(scene, p.id);
+            return top ? [{ id: p.model, top }] : [];
+          },
+        ),
+      (into) => dispatch({ type: "dipped", into }),
+    );
     const grab = new GrabSystem(scene, (event) => {
       dispatch(event);
       if (!("model" in event)) return;
@@ -224,7 +243,9 @@ export default function LabCanvas() {
           ? pour
           : event.model === "erlenmeyer_flask"
             ? flaskPour
-            : null;
+            : event.model === ELECTRODE_ID
+              ? dip
+              : null;
       if (event.type === "grabbed") watcher?.start();
       else if (event.type === "placed") watcher?.stop();
     });
@@ -326,6 +347,7 @@ export default function LabCanvas() {
       if (!disposed) setProgress(p);
     }).then(() => {
       if (disposed) return;
+      detachElectrode(scene);
       visuals.update(state);
       freezeStatic(scene);
       applyQuality(scene, settingsRef.current.quality);
@@ -363,6 +385,7 @@ export default function LabCanvas() {
       foam.dispose();
       pour.stop();
       flaskPour.stop();
+      dip.stop();
       onXRControllerAdded.remove(onGun);
       scene.onBeforeRenderObservable.remove(pollB);
       blaster.dispose();

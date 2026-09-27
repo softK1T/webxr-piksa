@@ -36,7 +36,9 @@ export function hintTarget(
       if (held === "cuvette") return zone("turbidimeter_socket");
       return cuvetteInserted ? item("turbidimeter") : item("cuvette");
     case "select_container":
-      return item("buffer_ph7");
+      return held === "ph_electrode"
+        ? item("buffer_ph7")
+        : item("ph_electrode");
     case "toggle_lever":
       return item("pump");
     case "press_start":

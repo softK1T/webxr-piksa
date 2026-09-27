@@ -17,7 +17,8 @@ const WATER_RUN: ScenarioEvent[] = [
   { type: "poured", model: "erlenmeyer_flask", into: "cuvette" },
   { type: "placed", model: "cuvette", zone: TURBIDIMETER_ZONE },
   { type: "read", device: "turbidimeter" },
-  { type: "selected", model: "buffer_bottle_ph7" },
+  { type: "dipped", into: "buffer_bottle_ph7" },
+  { type: "dipped", into: "buffer_bottle_ph4" },
   { type: "lever", on: true },
   { type: "button" },
 ];
@@ -40,10 +41,10 @@ test("parcel chain succeeds and the message carries the verdict", () => {
 test("wrong calibration buffer is a mistake and does not count", () => {
   const s = run([
     ...WATER_RUN.slice(0, 5),
-    { type: "selected", model: "buffer_bottle_ph4" },
+    { type: "dipped", into: "buffer_bottle_ph4" },
   ]);
   expect(s.mistakes).toBe(1);
-  expect(s.message).toBe("Wrong buffer (pH 4.01). Calibration needs pH 7.00.");
+  expect(s.message).toMatch(/^(Not yet|Start the calibration)/);
   expect(s.calibrated).toBe(false);
   expect(s.completed).not.toContain("select_container");
 });

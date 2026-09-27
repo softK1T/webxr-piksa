@@ -15,7 +15,7 @@ export const STEP_GUIDE: Record<StepId, string> = {
   tube_to_rack:
     "Insert the filled cuvette into the turbidimeter well (Analysis bench), then click the turbidimeter to press READ. The screen shows turbidity in NTU; limit 1 NTU.",
   select_container:
-    "Pick BUFFER pH 7.00 on the Analysis bench to calibrate the pH meter. pH 4.01 and pH 10.01 are the wrong buffers for this run. Meter screen: CAL 7.00 OK.",
+    "Take the pH electrode from its stand. Dip it into BUFFER pH 7.00 (CAL 1), then into pH 4.01 or pH 10.01 (CAL 2). Desktop: click the bottles while holding it.",
   toggle_lever:
     "Switch on the vacuum pump next to the filtration set (click the pump). Water is drawn through the filter paper into the receiving flask; the residue stays on the filter.",
   press_start:
