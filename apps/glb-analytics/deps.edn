@@ -1,9 +1,9 @@
-{:paths ["src" "resources"]
+{:paths ["src"]
  :deps  {org.clojure/clojure    {:mvn/version "1.12.0"}
          ring/ring-core          {:mvn/version "1.12.2"}
          ring/ring-jetty-adapter {:mvn/version "1.12.2"}
          metosin/reitit-ring     {:mvn/version "0.7.2"}
-         metosin/muuntaja        {:mvn/version "0.6.10"}
+         cheshire/cheshire       {:mvn/version "5.13.0"}
          ring-cors/ring-cors     {:mvn/version "0.1.13"}}
  :aliases
  {:run    {:main-opts ["-m" "glb-analytics.core"]}
