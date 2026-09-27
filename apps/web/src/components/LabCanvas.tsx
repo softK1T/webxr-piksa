@@ -13,7 +13,6 @@ import { mountInfoPanel } from "../scene/labDressing";
 import { loadLabModels, type LoadProgress } from "../scene/loadLabModels";
 import { GrabSystem } from "../sim/grab";
 import { createHintMarker } from "../sim/hintMarker";
-import { createTubeTint } from "../sim/tubeTint";
 import { HINT_DELAY_MS, hintTarget } from "../sim/hints";
 import { createInfoPanel } from "../sim/infoPanel";
 import { createWristPanel } from "../sim/wristPanel";
@@ -133,10 +132,8 @@ export default function LabCanvas() {
           : null,
     };
     const panel = createInfoPanel(scene);
-    const tubeTint = createTubeTint(scene);
     let state = newScenario();
     panel.draw(state);
-    tubeTint.update(state);
     const wrist = createWristPanel(scene);
     const range = createShootingRange(scene, {
       isUnlocked: () => state.status === "success",
@@ -152,7 +149,12 @@ export default function LabCanvas() {
       onRayHit: (mesh, point) => range.hit(mesh, point),
       onHit: (model, total) => {
         if (disposed) return;
-        const what = model === "lab_flask" ? "flask" : "test tube";
+        const what =
+          model === "cuvette"
+            ? "cuvette"
+            : model === "sample_bottle"
+              ? "sample bottle"
+              : "flask";
         setToast(`Pew! Broke a ${what}. Total glassware lost: ${total}`);
       },
     });
@@ -185,7 +187,6 @@ export default function LabCanvas() {
     const dispatch = (event: ScenarioEvent) => {
       state = reduceScenario(state, event);
       panel.draw(state);
-      tubeTint.update(state);
       wrist.draw(state);
       if (!disposed) setScenario(state);
     };
@@ -252,7 +253,7 @@ export default function LabCanvas() {
       }
       const stuck = performance.now() - hintSince > HINT_DELAY_MS;
       return step === "open_panel" || stuck
-        ? hintTarget(step, grab.heldModel, state.sampleId)
+        ? hintTarget(step, grab.heldModel)
         : null;
     });
     const events: XREvents = {

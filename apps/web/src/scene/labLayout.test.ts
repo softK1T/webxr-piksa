@@ -63,7 +63,6 @@ test("drop pads lie on a table and are clear of other items", () => {
     expect(table, z.id).toBeDefined();
     expect(z.center[1]).toBeCloseTo(table!.y, 3);
     for (const p of LAB_LAYOUT) {
-      if (z.id === "rack_zone" && p.id === "rack") continue;
       if (p.on !== "table_a" && p.on !== "table_b") continue;
       expect(overlap(pad, footprint(p)), `${z.id} vs ${p.id}`).toBe(false);
     }

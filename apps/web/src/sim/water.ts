@@ -87,8 +87,14 @@ export function seededRandom(seed: number): () => number {
   };
 }
 
-export function newSample(rand: () => number = Math.random, profile?: ProfileId): WaterSample {
-  const index = Math.min(PROFILE_IDS.length - 1, Math.floor(rand() * PROFILE_IDS.length));
+export function newSample(
+  rand: () => number = Math.random,
+  profile?: ProfileId,
+): WaterSample {
+  const index = Math.min(
+    PROFILE_IDS.length - 1,
+    Math.floor(rand() * PROFILE_IDS.length),
+  );
   const id: ProfileId = profile ?? PROFILE_IDS[index] ?? "clay";
   const p = WATER_PROFILES[id];
   return {
@@ -117,7 +123,10 @@ export function isCalibrationBuffer(id: string): boolean {
 }
 
 /** Turbidimeter screen text: the cuvette is filled from the raw (unfiltered) sample. */
-export function turbidimeterScreen(sample: WaterSample, cuvetteFilled: boolean): string {
+export function turbidimeterScreen(
+  sample: WaterSample,
+  cuvetteFilled: boolean,
+): string {
   return cuvetteFilled ? `${sample.rawNtu.toFixed(1)} NTU` : "E1 NO SAMPLE";
 }
 
@@ -128,7 +137,10 @@ export interface MeterReading {
 }
 
 /** pH/conductivity meter reading on the filtrate. */
-export function readPhMeter(sample: WaterSample, calibrated: boolean): MeterReading {
+export function readPhMeter(
+  sample: WaterSample,
+  calibrated: boolean,
+): MeterReading {
   return {
     ph: calibrated ? sample.ph : round(sample.ph + UNCALIBRATED_DRIFT, 2),
     conductivity: sample.conductivity,
@@ -143,7 +155,8 @@ export function phMeterScreen(reading: MeterReading): string {
 
 // ---- report --------------------------------------------------------------
 
-export type Verdict = "drinkable" | "drinkable_after_filtration" | "not_drinkable";
+export type Verdict =
+  "drinkable" | "drinkable_after_filtration" | "not_drinkable";
 
 export interface Check {
   name: string;
@@ -165,10 +178,30 @@ export function evaluate(sample: WaterSample): WaterReport {
   const phOk = sample.ph >= L.phMin && sample.ph <= L.phMax;
   const condOk = sample.conductivity <= L.conductivityUsCm;
   const checks: Check[] = [
-    { name: "Turbidity, raw", value: `${sample.rawNtu.toFixed(1)} NTU`, limit: `<= ${L.turbidityNtu}`, ok: rawOk },
-    { name: "Turbidity, filtered", value: `${sample.filteredNtu.toFixed(1)} NTU`, limit: `<= ${L.turbidityNtu}`, ok: filteredOk },
-    { name: "pH", value: sample.ph.toFixed(2), limit: `${L.phMin} - ${L.phMax}`, ok: phOk },
-    { name: "Conductivity", value: `${Math.round(sample.conductivity)} uS/cm`, limit: `<= ${L.conductivityUsCm}`, ok: condOk },
+    {
+      name: "Turbidity, raw",
+      value: `${sample.rawNtu.toFixed(1)} NTU`,
+      limit: `<= ${L.turbidityNtu}`,
+      ok: rawOk,
+    },
+    {
+      name: "Turbidity, filtered",
+      value: `${sample.filteredNtu.toFixed(1)} NTU`,
+      limit: `<= ${L.turbidityNtu}`,
+      ok: filteredOk,
+    },
+    {
+      name: "pH",
+      value: sample.ph.toFixed(2),
+      limit: `${L.phMin} - ${L.phMax}`,
+      ok: phOk,
+    },
+    {
+      name: "Conductivity",
+      value: `${Math.round(sample.conductivity)} uS/cm`,
+      limit: `<= ${L.conductivityUsCm}`,
+      ok: condOk,
+    },
   ];
   const verdict: Verdict = !(filteredOk && phOk && condOk)
     ? "not_drinkable"
@@ -180,7 +213,8 @@ export function evaluate(sample: WaterSample): WaterReport {
 
 const VERDICT_TEXT: Record<Verdict, string> = {
   drinkable: "DRINKABLE",
-  drinkable_after_filtration: "DRINKABLE ONLY AFTER FILTRATION - fit a sediment filter",
+  drinkable_after_filtration:
+    "DRINKABLE ONLY AFTER FILTRATION - fit a sediment filter",
   not_drinkable: "NOT DRINKABLE - do not drink, contact the sanitary station",
 };
 
@@ -188,7 +222,9 @@ export function formatReport(sample: WaterSample): string[] {
   const report = evaluate(sample);
   return [
     "WATER TEST REPORT",
-    ...report.checks.map((c) => `${c.name}: ${c.value} (limit ${c.limit}) ${c.ok ? "OK" : "FAIL"}`),
+    ...report.checks.map(
+      (c) => `${c.name}: ${c.value} (limit ${c.limit}) ${c.ok ? "OK" : "FAIL"}`,
+    ),
     `Likely cause: ${report.cause}`,
     `VERDICT: ${VERDICT_TEXT[report.verdict]}`,
   ];
@@ -206,11 +242,19 @@ const mix = (a: Rgb, b: Rgb, t: number): Rgb => [
 
 /** Raw sample colour: murkier profiles/values drift further from clear water. */
 export function rawWaterColor(sample: WaterSample): Rgb {
-  return mix(CLEAR_WATER, WATER_PROFILES[sample.profile].water, Math.min(1, 0.4 + sample.rawNtu / 60));
+  return mix(
+    CLEAR_WATER,
+    WATER_PROFILES[sample.profile].water,
+    Math.min(1, 0.4 + sample.rawNtu / 60),
+  );
 }
 
 export function filtrateColor(sample: WaterSample): Rgb {
-  return mix(CLEAR_WATER, WATER_PROFILES[sample.profile].water, Math.min(0.3, sample.filteredNtu / 15));
+  return mix(
+    CLEAR_WATER,
+    WATER_PROFILES[sample.profile].water,
+    Math.min(0.3, sample.filteredNtu / 15),
+  );
 }
 
 export function residueColor(sample: WaterSample): Rgb {

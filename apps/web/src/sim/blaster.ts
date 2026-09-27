@@ -20,8 +20,6 @@ import { createBevelBox } from "../scene/bevelBox";
 import { placementOf } from "../xr/selection";
 
 export const BLASTER_TARGETS = [
-  "lab_flask",
-  "test_tube",
   "erlenmeyer_flask",
   "cuvette",
   "sample_bottle",

@@ -17,10 +17,10 @@ const run = (events: ScenarioEvent[], start: ScenarioState = initialScenario) =>
 const HAPPY: ScenarioEvent[] = [
   { type: "panel_opened" },
   { type: "placed", model: "safety_goggles", zone: "prep_zone" },
-  { type: "grabbed", model: "lab_flask" },
-  { type: "placed", model: "lab_flask", zone: "workbench_zone" },
-  { type: "placed", model: "test_tube", zone: "rack_zone" },
-  { type: "selected", model: "colored_container_blue" },
+  { type: "grabbed", model: "sample_bottle" },
+  { type: "poured", model: "sample_bottle", into: "erlenmeyer_flask" },
+  { type: "placed", model: "cuvette", zone: "turbidimeter_socket" },
+  { type: "selected", model: "buffer_bottle_ph7" },
   { type: "lever", on: true },
   { type: "button" },
 ];
@@ -40,7 +40,7 @@ test("pressing start early fails with a hint", () => {
 test("out-of-order action gives a hint and is not counted", () => {
   const s = run([
     { type: "panel_opened" },
-    { type: "placed", model: "test_tube", zone: "rack_zone" },
+    { type: "placed", model: "cuvette", zone: "turbidimeter_socket" },
   ]);
   expect(s.completed).toEqual(["open_panel"]);
   expect(s.message).toMatch(/^Not yet/);
@@ -49,9 +49,9 @@ test("out-of-order action gives a hint and is not counted", () => {
 test("wrong container is reported", () => {
   const s = run([
     ...HAPPY.slice(0, 5),
-    { type: "selected", model: "colored_container_red" },
+    { type: "selected", model: "buffer_bottle_ph4" },
   ]);
-  expect(s.message).toContain("Wrong reagent");
+  expect(s.message).toContain("Wrong buffer");
   expect(s.completed).not.toContain("select_container");
 });
 
@@ -152,9 +152,9 @@ test("third extinguisher spray in a row starts a foam party", async () => {
 
 test("blaster only breaks glassware", async () => {
   const { isBlasterTarget } = await import("./blaster");
-  expect(isBlasterTarget("lab_flask")).toBe(true);
-  expect(isBlasterTarget("test_tube")).toBe(true);
-  expect(isBlasterTarget("measurement_device")).toBe(false);
+  expect(isBlasterTarget("erlenmeyer_flask")).toBe(true);
+  expect(isBlasterTarget("cuvette")).toBe(true);
+  expect(isBlasterTarget("turbidimeter")).toBe(false);
   expect(isBlasterTarget(null)).toBe(false);
 });
 

@@ -63,7 +63,7 @@ test("hint points to item, then to zone while holding", () => {
 test("mistakes are counted", () => {
   const s = [
     { type: "button" } as const,
-    { type: "placed", model: "test_tube", zone: "rack_zone" } as const,
+    { type: "placed", model: "cuvette", zone: "turbidimeter_socket" } as const,
   ].reduce(reduceScenario, initialScenario);
   expect(s.mistakes).toBe(2);
 });

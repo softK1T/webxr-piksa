@@ -20,7 +20,8 @@ const WATER_RUN: ScenarioEvent[] = [
   { type: "button" },
 ];
 
-const run = (events: ScenarioEvent[], start = initialScenario) => events.reduce(reduceScenario, start);
+const run = (events: ScenarioEvent[], start = initialScenario) =>
+  events.reduce(reduceScenario, start);
 
 test("parcel chain succeeds and the message carries the verdict", () => {
   const s = run(WATER_RUN);
@@ -28,12 +29,17 @@ test("parcel chain succeeds and the message carries the verdict", () => {
   expect(s.mistakes).toBe(0);
   expect(s.flaskFilled && s.calibrated).toBe(true);
   const verdict = evaluate(s.sample).verdict;
-  expect(s.message).toContain(verdict === "not_drinkable" ? "NOT drinkable" : "drinkable");
+  expect(s.message).toContain(
+    verdict === "not_drinkable" ? "NOT drinkable" : "drinkable",
+  );
   expect(reportLines(s).at(-1)).toMatch(/^VERDICT: /);
 });
 
 test("wrong calibration buffer is a mistake and does not count", () => {
-  const s = run([...WATER_RUN.slice(0, 5), { type: "selected", model: "buffer_bottle_ph4" }]);
+  const s = run([
+    ...WATER_RUN.slice(0, 5),
+    { type: "selected", model: "buffer_bottle_ph4" },
+  ]);
   expect(s.mistakes).toBe(1);
   expect(s.message).toBe("Wrong buffer (pH 4.01). Calibration needs pH 7.00.");
   expect(s.calibrated).toBe(false);
@@ -47,7 +53,10 @@ test("cuvette before pouring is out of order", () => {
 });
 
 test("pouring into anything but the flask does nothing", () => {
-  const s = run([...WATER_RUN.slice(0, 3), { type: "poured", model: "sample_bottle", into: "floor" }]);
+  const s = run([
+    ...WATER_RUN.slice(0, 3),
+    { type: "poured", model: "sample_bottle", into: "floor" },
+  ]);
   expect(s.completed).not.toContain("flask_to_bench");
   expect(s.mistakes).toBe(0);
 });

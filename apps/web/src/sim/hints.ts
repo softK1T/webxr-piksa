@@ -17,7 +17,6 @@ export const HINT_DELAY_MS = 40_000;
 export function hintTarget(
   step: StepId | null,
   held: string | null,
-  sampleId = "sample_bottle",
 ): HintTarget {
   switch (step) {
     case "open_panel":
@@ -25,9 +24,11 @@ export function hintTarget(
     case "goggles_to_prep":
       return held === "safety_goggles" ? null : item("goggles");
     case "find_flask":
-      return item(sampleId);
+      return item("sample_bottle");
     case "flask_to_bench":
-      return held === "sample_bottle" ? item("erlenmeyer") : item(sampleId);
+      return held === "sample_bottle"
+        ? item("erlenmeyer")
+        : item("sample_bottle");
     case "tube_to_rack":
       return held === "cuvette" ? zone("turbidimeter_socket") : item("cuvette");
     case "select_container":

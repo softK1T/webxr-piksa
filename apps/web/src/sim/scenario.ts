@@ -11,7 +11,6 @@ import {
 
 /** Legacy scene props (old flask/tube/container layout) still map onto the same steps
  *  until the scene is migrated to the parcel equipment. Remove with the old props. */
-export const REQUIRED_CONTAINER = "colored_container_blue";
 export const REQUIRED_BUFFER = "buffer_bottle_ph7";
 export const TURBIDIMETER_ZONE = "turbidimeter_socket";
 
@@ -65,7 +64,7 @@ export const initialScenario: ScenarioState = {
   message: "Night shift. A parcel is waiting by the door.",
   leverOn: false,
   mistakes: 0,
-  sampleId: "flask",
+  sampleId: "sample_bottle",
   sampleNo: 7,
   seed: DEFAULT_SEED,
   sample: newSample(seededRandom(DEFAULT_SEED)),
@@ -73,23 +72,11 @@ export const initialScenario: ScenarioState = {
   calibrated: false,
 };
 
-/** Legacy: five identical flasks, told apart only by the number on their tag. */
-export const SAMPLE_FLASKS = [
-  { id: "flask", no: 7 },
-  { id: "flask_2", no: 3 },
-  { id: "flask_3", no: 5 },
-  { id: "flask_4", no: 8 },
-  { id: "flask_5", no: 9 },
-] as const;
-
-/** New run: random water sample (and legacy flask). */
+/** New run: random water sample. */
 export function newScenario(rand: () => number = Math.random): ScenarioState {
-  const f = SAMPLE_FLASKS[Math.floor(rand() * SAMPLE_FLASKS.length)];
   const seed = Math.floor(rand() * 0x100000000);
   return {
     ...initialScenario,
-    sampleId: f.id,
-    sampleNo: f.no,
     seed,
     sample: newSample(seededRandom(seed)),
   };
@@ -130,26 +117,18 @@ function stepFor(event: ScenarioEvent): StepId | null {
         (event.zone === "face" || event.zone === "prep_zone")
       )
         return "goggles_to_prep";
-      if (event.model === "lab_flask" && event.zone === "workbench_zone")
-        return "flask_to_bench";
       if (event.model === "cuvette" && event.zone === TURBIDIMETER_ZONE)
-        return "tube_to_rack";
-      if (event.model === "test_tube" && event.zone === "rack_zone")
         return "tube_to_rack";
       return null;
     case "poured":
-      return event.model === "sample_bottle" && event.into === "erlenmeyer_flask"
+      return event.model === "sample_bottle" &&
+        event.into === "erlenmeyer_flask"
         ? "flask_to_bench"
         : null;
     case "grabbed":
-      return event.model === "sample_bottle" || event.model === "lab_flask"
-        ? "find_flask"
-        : null;
+      return event.model === "sample_bottle" ? "find_flask" : null;
     case "selected":
-      if (event.model === "lab_flask") return "find_flask";
-      return event.model === REQUIRED_BUFFER || event.model === REQUIRED_CONTAINER
-        ? "select_container"
-        : null;
+      return event.model === REQUIRED_BUFFER ? "select_container" : null;
     case "lever":
       return event.on ? "toggle_lever" : null;
     default:
@@ -159,13 +138,12 @@ function stepFor(event: ScenarioEvent): StepId | null {
 
 function wrongChoice(event: ScenarioEvent): string | null {
   if (event.type !== "selected") return null;
-  if (event.model.startsWith("buffer_bottle_") && !isCalibrationBuffer(event.model)) {
+  if (
+    event.model.startsWith("buffer_bottle_") &&
+    !isCalibrationBuffer(event.model)
+  ) {
     const ph = (BUFFER_PH as Record<string, number>)[event.model];
     return `Wrong buffer (pH ${ph?.toFixed(2) ?? "?"}). Calibration needs pH 7.00.`;
-  }
-  if (event.model.startsWith("colored_container_") && event.model !== REQUIRED_CONTAINER) {
-    const color = event.model.replace("colored_container_", "");
-    return `Wrong reagent (${color}). Check the order form.`;
   }
   return null;
 }
@@ -223,7 +201,12 @@ export function reduceScenario(
   if (event.type === "button") return validate(s);
   const wrong = wrongChoice(event);
   if (wrong) {
-    return { ...s, status: "running", mistakes: s.mistakes + 1, message: wrong };
+    return {
+      ...s,
+      status: "running",
+      mistakes: s.mistakes + 1,
+      message: wrong,
+    };
   }
   const step = stepFor(event);
   if (!step || s.completed.includes(step)) return s;
