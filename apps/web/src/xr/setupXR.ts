@@ -107,10 +107,16 @@ export async function setupXR(
   const xr = await scene.createDefaultXRExperienceAsync({
     floorMeshes: [floor],
     disableDefaultUI: true,
-    disableTeleportation: true,
+    disableTeleportation: false,
     optionalFeatures: true,
   });
   const features = xr.baseExperience.featuresManager;
+
+  // Disable the default teleportation created above so we can replace it with
+  // our own configured instance (useMainComponentOnly makes it work in the
+  // Immersive Web Emulator which doesn't reliably emulate thumbstick-release).
+  features.disableFeature(WebXRFeatureName.TELEPORTATION);
+
   // Gestures: WebXR hand tracking (optional, the session still starts without it).
   // Pinch = select (grab / press); pinch-and-hold on the floor = teleport (hands have no thumbstick).
   try {
@@ -144,15 +150,23 @@ export async function setupXR(
     settings = { ...settings, mode };
     if (mode === "teleport") {
       features.disableFeature(WebXRFeatureName.MOVEMENT);
+      // "latest" required: the Immersive Web Emulator only implements the latest
+      // WebXR teleportation API. useMainComponentOnly=true activates teleport via
+      // the trigger button instead of thumbstick-release, which the emulator
+      // emulates correctly. timeToTeleport=0 makes it instant (no hold needed).
       const teleport = features.enableFeature(
         WebXRFeatureName.TELEPORTATION,
-        "stable",
-        { xrInput: xr.input, floorMeshes: [floor] },
+        "latest",
+        {
+          xrInput: xr.input,
+          floorMeshes: [floor],
+          useMainComponentOnly: true,
+          timeToTeleport: 0,
+        },
         true,
         false,
       ) as WebXRMotionControllerTeleportation;
       teleport.rotationEnabled = settings.snapTurn;
-      if (!settings.snapTurn) enableMovement(false);
     } else {
       features.disableFeature(WebXRFeatureName.TELEPORTATION);
       enableMovement(true);
