@@ -1,4 +1,4 @@
-import { Scene, TransformNode } from "@babylonjs/core";
+import { PointerDragBehavior, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 import { loadModel } from "../scene/loadLabModels";
 import {
   modelLocation,
@@ -54,6 +54,54 @@ export function writeTransform(scene: Scene, obj: SceneObjectConfig): boolean {
   );
   anchor.scaling.set(obj.scale[0], obj.scale[1], obj.scale[2]);
   return true;
+}
+
+/**
+ * Attach a horizontal-plane drag behaviour to an anchor node so the user can
+ * drag it with the mouse while the editor panel is open.
+ * The drag is constrained to the XZ plane (Y stays fixed) so objects slide
+ * along the floor rather than flying into the air.
+ */
+export function attachDrag(
+  scene: Scene,
+  anchor: TransformNode,
+  onDragEnd: () => void,
+): void {
+  // Remove any existing drag behaviour first (idempotent).
+  anchor.behaviors
+    .filter((b) => b instanceof PointerDragBehavior)
+    .forEach((b) => anchor.removeBehavior(b));
+
+  const drag = new PointerDragBehavior({
+    dragPlaneNormal: new Vector3(0, 1, 0), // XZ plane
+  });
+  drag.useObjectOrientationForDragging = false;
+  drag.onDragEndObservable.add(onDragEnd);
+  anchor.addBehavior(drag);
+}
+
+/**
+ * Remove drag behaviour from all editor-placed anchors (call when editor closes).
+ */
+export function detachAllDrags(scene: Scene): void {
+  for (const node of scene.transformNodes) {
+    if (!anchorMeta(node)) continue;
+    node.behaviors
+      .filter((b) => b instanceof PointerDragBehavior)
+      .forEach((b) => node.removeBehavior(b));
+  }
+}
+
+/**
+ * Return a spawn position 2 m in front of the active camera,
+ * snapped to Y = 0 (floor level).
+ */
+export function spawnInFront(scene: Scene): [number, number, number] {
+  const camera = scene.activeCamera;
+  if (!camera) return [0, 0, 0];
+  const forward = camera.getForwardRay(2).direction;
+  const pos = camera.position.add(forward.scale(2));
+  return [pos.x, 0, pos.z];
 }
 
 export async function applyConfig(

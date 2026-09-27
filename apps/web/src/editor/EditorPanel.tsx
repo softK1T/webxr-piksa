@@ -14,7 +14,15 @@ import {
   type SceneObjectConfig,
   type Triple,
 } from "./sceneConfig";
-import { applyConfig, snapshot, uniqueId, writeTransform } from "./sceneEditor";
+import {
+  applyConfig,
+  attachDrag,
+  detachAllDrags,
+  snapshot,
+  spawnInFront,
+  uniqueId,
+  writeTransform,
+} from "./sceneEditor";
 
 interface Props {
   getScene(): Scene | null;
@@ -71,6 +79,14 @@ export function EditorPanel({ getScene, onClose }: Props) {
     reloadLists();
   }, [refresh, reloadLists]);
 
+  // Detach drags when panel unmounts
+  useEffect(() => {
+    return () => {
+      const scene = getScene();
+      if (scene) detachAllDrags(scene);
+    };
+  }, [getScene]);
+
   const selected = objects.find((o) => o.id === selectedId) ?? null;
 
   const update = (field: Field, axis: number, value: number) => {
@@ -107,6 +123,11 @@ export function EditorPanel({ getScene, onClose }: Props) {
     if (!config) throw new Error(errors.join("; "));
     const { scene } = current();
     const failed = await applyConfig(scene, config);
+    // Re-attach drags for all newly placed objects
+    for (const obj of config.objects) {
+      const anchor = scene.getTransformNodeByName(`place_${obj.id}`);
+      if (anchor) attachDrag(scene, anchor, refresh);
+    }
     setName(config.name);
     refresh();
     return failed.length
@@ -186,11 +207,13 @@ export function EditorPanel({ getScene, onClose }: Props) {
     run(async () => {
       const { scene } = current();
       const id = uniqueId(scene, model);
+      // Spawn 2 m in front of the camera at floor level
+      const pos = spawnInFront(scene);
       const obj: SceneObjectConfig = {
         id,
         model,
         source,
-        position: [0, 0, 0],
+        position: pos,
         rotation: [0, 0, 0],
         scale: [1, 1, 1],
       };
@@ -200,6 +223,9 @@ export function EditorPanel({ getScene, onClose }: Props) {
         objects: [obj],
       });
       if (failed.length) throw new Error(`Failed to load ${model}`);
+      // Attach drag to the new anchor so user can drag it with the mouse
+      const anchor = scene.getTransformNodeByName(`place_${id}`);
+      if (anchor) attachDrag(scene, anchor, refresh);
       refresh();
       setSelectedId(id);
       return `Added ${id}`;
@@ -215,11 +241,17 @@ export function EditorPanel({ getScene, onClose }: Props) {
       return `Removed ${selected.id}`;
     });
 
+  const handleClose = () => {
+    const scene = getScene();
+    if (scene) detachAllDrags(scene);
+    onClose();
+  };
+
   return (
     <aside className="editor-panel" aria-label="Scene editor">
       <header>
         <h2>Scene editor</h2>
-        <button onClick={onClose}>Close</button>
+        <button onClick={handleClose}>Close</button>
       </header>
 
       <section>
