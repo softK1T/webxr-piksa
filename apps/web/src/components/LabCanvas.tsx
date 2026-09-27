@@ -56,6 +56,7 @@ import {
   checkXRSupport,
   type XRSupport,
 } from "../xr/xrSupport";
+import type { Scene } from "@babylonjs/core";
 
 type Screen = "menu" | "instructions" | "settings" | "lab";
 
@@ -64,7 +65,11 @@ interface Runtime {
   camera: UniversalCamera | null;
 }
 
-export default function LabCanvas() {
+interface Props {
+  onRegisterGetScene?: (fn: () => Scene | null) => void;
+}
+
+export default function LabCanvas({ onRegisterGetScene }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const xrRef = useRef<XRController | null>(null);
   const runtimeRef = useRef<Runtime | null>(null);
@@ -124,6 +129,10 @@ export default function LabCanvas() {
       return;
     }
     const scene = createLabScene(engine, canvas);
+
+    // Register the scene getter so EditorPanel (mounted in App) can access it.
+    onRegisterGetScene?.(() => engine.scenes[0] ?? null);
+
     applyQuality(scene, settingsRef.current.quality);
     scene.imageProcessingConfiguration.exposure =
       settingsRef.current.brightness;
@@ -298,7 +307,7 @@ export default function LabCanvas() {
       }
       if (state.mistakes !== hintMistakes) {
         hintMistakes = state.mistakes;
-        hintSince = -Infinity; // a mistake shows the way right away
+        hintSince = -Infinity;
       }
       const stuck = performance.now() - hintSince > HINT_DELAY_MS;
       return step === "open_panel" || stuck
