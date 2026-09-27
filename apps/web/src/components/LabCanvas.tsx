@@ -17,6 +17,7 @@ import { clickEvent, openParcelLid } from "../sim/devices";
 import { createHintMarker } from "../sim/hintMarker";
 import { HINT_DELAY_MS, hintTarget } from "../sim/hints";
 import { createInfoPanel } from "../sim/infoPanel";
+import { createEquipmentVisuals } from "../scene/equipmentVisuals";
 import { createWristPanel } from "../sim/wristPanel";
 import { createFoamSprayer, forwardOf } from "../sim/extinguisher";
 import { createBlaster } from "../sim/blaster";
@@ -134,6 +135,7 @@ export default function LabCanvas() {
           : null,
     };
     const panel = createInfoPanel(scene);
+    const visuals = createEquipmentVisuals(scene);
     let state = newScenario();
     panel.draw(state);
     const wrist = createWristPanel(scene);
@@ -189,6 +191,7 @@ export default function LabCanvas() {
     const dispatch = (event: ScenarioEvent) => {
       state = reduceScenario(state, event);
       panel.draw(state);
+      visuals.update(state);
       wrist.draw(state);
       if (!disposed) setScenario(state);
     };
@@ -308,6 +311,7 @@ export default function LabCanvas() {
     }).then(() => {
       if (disposed) return;
       mountInfoPanel(scene);
+      visuals.update(state);
       freezeStatic(scene);
       applyQuality(scene, settingsRef.current.quality);
     });
