@@ -93,17 +93,28 @@ export const LAB_LAYOUT: readonly (ModelPlacement & { on: SurfaceId })[] = [
     position: [2.5, T, 1.2],
     on: "table_b",
   },
-  { id: "ph_meter", model: "ph_meter", position: [3.0, T, 1.2], on: "table_b" },
+  {
+    id: "ph_meter",
+    model: "ph_meter",
+    position: [3.0, T, 1.2],
+    // glTF import mirrors x and keeps +z: the models face away from the bench edge; turn to the user
+    rotationY: Math.PI,
+    on: "table_b",
+  },
   {
     id: "filtration",
     model: "vacuum_filtration",
     position: [3.45, T, 1.15],
+    // turned so the side-arm hose (local +x, mirrored on import) points at the pump
+    rotationY: Math.PI,
     on: "table_b",
   },
   {
     id: "pump",
     model: "vacuum_pump",
     position: [3.81, T, 1.15],
+    // lever and gauge towards the user
+    rotationY: Math.PI,
     on: "table_b",
   },
   {
