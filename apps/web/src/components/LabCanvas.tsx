@@ -17,6 +17,7 @@ import { clickEvent, openParcelLid } from "../sim/devices";
 import { createHintMarker } from "../sim/hintMarker";
 import { HINT_DELAY_MS, hintTarget } from "../sim/hints";
 import { createInfoPanel } from "../sim/infoPanel";
+import { createStepBoard } from "../scene/stepBoard";
 import { createEquipmentVisuals } from "../scene/equipmentVisuals";
 import { createWristPanel } from "../sim/wristPanel";
 import { createFoamSprayer, forwardOf } from "../sim/extinguisher";
@@ -135,9 +136,11 @@ export default function LabCanvas() {
           : null,
     };
     const panel = createInfoPanel(scene);
+    const board = createStepBoard(scene);
     const visuals = createEquipmentVisuals(scene);
     let state = newScenario();
     panel.draw(state);
+    board.draw(state);
     const wrist = createWristPanel(scene);
     const range = createShootingRange(scene, {
       isUnlocked: () => state.status === "success",
@@ -191,6 +194,7 @@ export default function LabCanvas() {
     const dispatch = (event: ScenarioEvent) => {
       state = reduceScenario(state, event);
       panel.draw(state);
+      board.draw(state);
       visuals.update(state);
       wrist.draw(state);
       if (!disposed) setScenario(state);
