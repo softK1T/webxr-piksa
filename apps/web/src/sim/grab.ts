@@ -16,7 +16,6 @@ export const GRABBABLE: ReadonlySet<string> = new Set([
   "sample_bottle",
   "erlenmeyer_flask",
   "cuvette",
-  "ph_electrode",
   "fire_extinguisher",
 ]);
 

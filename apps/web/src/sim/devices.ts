@@ -1,4 +1,3 @@
-import { LAB_LAYOUT } from "../scene/labLayout";
 import { TransformNode, type Scene } from "@babylonjs/core";
 import type { ScenarioEvent } from "./scenario";
 
@@ -8,9 +7,6 @@ export function clickEvent(
   held: string | null,
   leverOn: boolean,
 ): ScenarioEvent | null {
-  const model = LAB_LAYOUT.find((p) => p.id === placementId)?.model;
-  if (held === "ph_electrode" && model?.startsWith("buffer_bottle_"))
-    return { type: "dipped", into: model };
   switch (placementId) {
     case "parcel":
       return { type: "panel_opened" };

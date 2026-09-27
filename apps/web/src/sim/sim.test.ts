@@ -22,8 +22,7 @@ const HAPPY: ScenarioEvent[] = [
   { type: "poured", model: "erlenmeyer_flask", into: "cuvette" },
   { type: "placed", model: "cuvette", zone: "turbidimeter_socket" },
   { type: "read", device: "turbidimeter" },
-  { type: "dipped", into: "buffer_bottle_ph7" },
-  { type: "dipped", into: "buffer_bottle_ph4" },
+  { type: "selected", model: "buffer_bottle_ph7" },
   { type: "lever", on: true },
   { type: "button" },
 ];
@@ -54,9 +53,9 @@ test("out-of-order action gives a hint and is not counted", () => {
 test("wrong container is reported", () => {
   const s = run([
     ...HAPPY.slice(0, 5),
-    { type: "dipped", into: "buffer_bottle_ph4" },
+    { type: "selected", model: "buffer_bottle_ph4" },
   ]);
-  expect(s.message).toMatch(/^(Not yet|Start the calibration)/);
+  expect(s.message).toContain("Wrong buffer");
   expect(s.completed).not.toContain("select_container");
 });
 

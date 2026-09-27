@@ -50,10 +50,8 @@ export function equipmentView(state: ScenarioState): EquipmentView {
     phMeter: done("press_start")
       ? phMeterScreen(readPhMeter(state.sample, state.calibrated))
       : state.calibrated
-        ? "CAL 2 OK"
-        : state.phCal1
-          ? "CAL 1 OK"
-          : "CAL ---",
+        ? "CAL 7.00 OK"
+        : "CAL ---",
   };
 }
 

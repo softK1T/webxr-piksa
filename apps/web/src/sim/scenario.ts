@@ -1,4 +1,5 @@
 import {
+  BUFFER_PH,
   evaluate,
   formatReport,
   isCalibrationBuffer,
@@ -10,6 +11,7 @@ import {
 
 /** Legacy scene props (old flask/tube/container layout) still map onto the same steps
  *  until the scene is migrated to the parcel equipment. Remove with the old props. */
+export const REQUIRED_BUFFER = "buffer_bottle_ph7";
 export const TURBIDIMETER_ZONE = "turbidimeter_socket";
 
 // Step ids are fixed by PLAN section 9; titles describe the water-analysis chain.
@@ -35,7 +37,6 @@ export type ScenarioEvent =
   | { type: "selected"; model: string; id?: string }
   | { type: "lever"; on: boolean }
   | { type: "button" }
-  | { type: "dipped"; into: string }
   | { type: "read"; device: "turbidimeter" }
   | { type: "reset" };
 
@@ -58,8 +59,6 @@ export interface ScenarioState {
   cuvetteFilled: boolean;
   /** the cuvette sits in the turbidimeter well (READ measures it) */
   cuvetteInserted: boolean;
-  /** pH 7.00 calibration point stored (CAL 1) */
-  phCal1: boolean;
   calibrated: boolean;
 }
 
@@ -78,7 +77,6 @@ export const initialScenario: ScenarioState = {
   flaskFilled: false,
   cuvetteFilled: false,
   cuvetteInserted: false,
-  phCal1: false,
   calibrated: false,
 };
 
@@ -133,11 +131,25 @@ function stepFor(event: ScenarioEvent): StepId | null {
         : null;
     case "grabbed":
       return event.model === "sample_bottle" ? "find_flask" : null;
+    case "selected":
+      return event.model === REQUIRED_BUFFER ? "select_container" : null;
     case "lever":
       return event.on ? "toggle_lever" : null;
     default:
       return null;
   }
+}
+
+function wrongChoice(event: ScenarioEvent): string | null {
+  if (event.type !== "selected") return null;
+  if (
+    event.model.startsWith("buffer_bottle_") &&
+    !isCalibrationBuffer(event.model)
+  ) {
+    const ph = (BUFFER_PH as Record<string, number>)[event.model];
+    return `Wrong buffer (pH ${ph?.toFixed(2) ?? "?"}). Calibration needs pH 7.00.`;
+  }
+  return null;
 }
 
 function validate(state: ScenarioState): ScenarioState {
@@ -198,38 +210,13 @@ export function reduceScenario(
       ...s,
       message: "E1 NO SAMPLE: insert the filled cuvette into the well first.",
     };
-  if (event.type === "dipped" && event.into.startsWith("buffer_bottle_")) {
-    const expected = nextStep(s);
-    if (expected !== "select_container")
-      return expected
-        ? {
-            ...s,
-            status: "running",
-            mistakes: s.mistakes + 1,
-            message: `Not yet. First: ${title(expected)}.`,
-          }
-        : s;
-    if (isCalibrationBuffer(event.into))
-      return {
-        ...s,
-        phCal1: true,
-        message: "CAL 1: pH 7.00 stored. Now dip into pH 4.01 or pH 10.01.",
-      };
-    if (!s.phCal1)
-      return {
-        ...s,
-        status: "running",
-        mistakes: s.mistakes + 1,
-        message: "Start the calibration in pH 7.00.",
-      };
-    const completed: StepId[] = [...s.completed, "select_container"];
-    const upcoming = nextStep({ completed });
+  const wrong = wrongChoice(event);
+  if (wrong) {
     return {
       ...s,
-      completed,
       status: "running",
-      calibrated: true,
-      message: `CAL 2 stored, slope OK.${upcoming ? ` Next: ${title(upcoming)}.` : ""}`,
+      mistakes: s.mistakes + 1,
+      message: wrong,
     };
   }
   const step = stepFor(event);
