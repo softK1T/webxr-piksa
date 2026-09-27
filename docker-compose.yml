@@ -24,25 +24,19 @@ services:
     ports:
       - "${API_PORT:-8000}:8000"
 
-  leaderboard:
-    build: ./apps/leaderboard
-    environment:
-      DATABASE_URL: ${LB_DATABASE_URL:-jdbc:postgresql://db:5432/piksa?user=piksa&password=change-me}
-      LB_PORT: 3000
-    depends_on:
-      db:
-        condition: service_healthy
+  glb-analytics:
+    build: ./apps/glb-analytics
     ports:
-      - "${LB_PORT:-3001}:3000"
+      - "${GLB_PORT:-3001}:3001"
 
   web:
     build: ./apps/web
     environment:
       API_PROXY_TARGET: http://api:8000
-      LB_PROXY_TARGET: http://leaderboard:3000
+      GLB_PROXY_TARGET: http://glb-analytics:3001
     depends_on:
       - api
-      - leaderboard
+      - glb-analytics
     ports:
       - "${WEB_PORT:-5173}:5173"
 

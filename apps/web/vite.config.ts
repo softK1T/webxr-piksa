@@ -17,13 +17,16 @@ export default defineConfig({
     },
   },
   server: {
-    // listen on all interfaces (needed inside Docker) and accept the public domain behind Cloudflare
     host: true,
     allowedHosts: ["localhost", ".softk1t.space"],
     proxy: {
       "/api": {
         target: process.env.API_PROXY_TARGET || "http://localhost:8000",
         rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+      "/glb": {
+        target: process.env.GLB_PROXY_TARGET || "http://localhost:3001",
+        rewrite: (path) => path.replace(/^\/glb/, ""),
       },
     },
   },

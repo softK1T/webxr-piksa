@@ -3,8 +3,7 @@ import AuthForm from "./auth/AuthForm";
 import { authApi, UNAUTHORIZED_EVENT, type User } from "./auth/authApi";
 import LabCanvas from "./components/LabCanvas";
 import { EditorPanel } from "./editor/EditorPanel";
-import LeaderboardWidget from "./leaderboard/LeaderboardWidget";
-import { submitResult } from "./leaderboard/leaderboardApi";
+import GlbAnalyticsPanel from "./analytics/GlbAnalyticsPanel";
 
 type AuthState = { status: "loading" } | { status: "ready"; user: User | null };
 
@@ -12,7 +11,7 @@ export default function App() {
   const [status, setStatus] = useState("Checking connection…");
   const [auth, setAuth] = useState<AuthState>({ status: "loading" });
   const [showEditor, setShowEditor] = useState(false);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const getSceneRef = useRef<
     (() => import("@babylonjs/core").Scene | null) | null
   >(null);
@@ -55,16 +54,6 @@ export default function App() {
 
   const user = auth.status === "ready" ? auth.user : null;
 
-  const handleFinished = (timeSec: number, mistakes: number) => {
-    if (!user) return;
-    void submitResult({
-      user_id: user.id,
-      login: user.login,
-      time_sec: timeSec,
-      mistakes,
-    });
-  };
-
   return (
     <main>
       <header className="topbar">
@@ -74,8 +63,8 @@ export default function App() {
         {user && (
           <div className="user-box">
             <span>{user.login}</span>
-            <button type="button" onClick={() => setShowLeaderboard((v) => !v)}>
-              🏆 Leaderboard
+            <button type="button" onClick={() => setShowAnalytics((v) => !v)}>
+              📊 GLB Analytics
             </button>
             <button type="button" onClick={() => setShowEditor((v) => !v)}>
               Scene editor
@@ -94,7 +83,6 @@ export default function App() {
               onRegisterGetScene={(fn) => {
                 getSceneRef.current = fn;
               }}
-              onFinished={handleFinished}
             />
             {showEditor && (
               <EditorPanel
@@ -102,8 +90,8 @@ export default function App() {
                 onClose={() => setShowEditor(false)}
               />
             )}
-            {showLeaderboard && (
-              <LeaderboardWidget onClose={() => setShowLeaderboard(false)} />
+            {showAnalytics && (
+              <GlbAnalyticsPanel onClose={() => setShowAnalytics(false)} />
             )}
           </>
         ) : (
