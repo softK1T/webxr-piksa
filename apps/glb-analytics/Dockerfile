@@ -1,12 +1,11 @@
-FROM clojure:temurin-21-tools-deps-alpine AS build
+FROM clojure:temurin-21-tools-deps-alpine
 WORKDIR /app
+
+# Cache deps first
 COPY deps.edn .
 RUN clojure -P
-COPY src src
-RUN clojure -T:uberjar
 
-FROM eclipse-temurin:21-jre-alpine
-WORKDIR /app
-COPY --from=build /app/glb-analytics.jar glb-analytics.jar
+COPY src src
+
 EXPOSE 3001
-CMD ["java", "-jar", "glb-analytics.jar"]
+CMD ["clojure", "-M:run"]

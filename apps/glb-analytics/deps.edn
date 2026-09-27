@@ -6,9 +6,4 @@
          cheshire/cheshire       {:mvn/version "5.13.0"}
          ring-cors/ring-cors     {:mvn/version "0.1.13"}}
  :aliases
- {:run    {:main-opts ["-m" "glb-analytics.core"]}
-  :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.303"}}
-             :exec-fn      hf.depstar/uberjar
-             :exec-args    {:aot  true
-                            :main glb-analytics.core
-                            :jar  "glb-analytics.jar"}}}}
+ {:run {:main-opts ["-m" "glb-analytics.core"]}}}
